@@ -1,0 +1,301 @@
+
+---
+title: '<font size = 7 color = "white">Does the Number of Flights Influence Flight Delays? </font>'
+subtitle: '<img src="img/takeoff.gif" width=250 height=200>'
+author: '<font size = 5 color = "white"> Kyle Knox </font>'
+institute: '<font size = 6 color = "white">Simple Linear Regression</font><br> '
+date: ' <font color = "white" size =4> Prepared for<br> </font> <br> <font color = "gold" size = 6> STA553: Data Visualization </font> <br> <br> <font color = "white" size = 3> Slides available at: https://your-RPubs-url AND https://your-GitHub-url</font>'
+output:
+  xaringan::moon_reader:
+  css: xaringan-themer01.css
+nature:
+  slideNumberFormat: "%current%"
+highlightStyle: github
+highlightLines: true
+ratio: 16:9
+countIncrementalSlides: true
+---
+  
+  ```{r setup, include=FALSE}
+options(htmltools.dir.version = FALSE)
+if (!require("knitr")) {
+  install.packages("knitr")
+  library(knitr)
+}
+if (!require("pander")) {
+  install.packages("pander")
+  library(pander)
+}
+if (!require("plotly")) {
+  install.packages("plotly")
+  library(plotly)
+}
+if (!require("ggplot2")) {
+  install.packages("ggplot2")
+  library(ggplot2)
+}
+knitr::opts_chunk$set(
+  fig.width=3, 
+  fig.height=3, 
+  fig.retina=12,
+  out.width = "100%",
+  cache = FALSE,
+  echo = TRUE,
+  message = FALSE, 
+  warning = FALSE,
+  hiline = TRUE
+)
+```
+
+```{r xaringan-themer, include=FALSE, warning=FALSE}
+library(xaringanthemer)
+style_duo_accent(primary_color = "#397255",
+                 secondary_color = "#FFFFFF",
+                 # fonts
+                 header_font_google = google_font("Martel"),
+                 text_font_google = google_font("Lato"),
+                 code_font_google = google_font("Fira Mono"))
+```
+<div style="width: 48%; float: left;">
+<h4 style="color: navy;">Variables</h4>
+<ul>
+  <li><span style="color: navy;">Carrier:</span> initials of airline company</li>
+  <li><span style="color: navy;">Airport_Distance:</span> distance between the airports in miles</li>
+  <li><span style="color: navy;">Number_of_Flights:</span> total number of flights in airport</li>
+  <li><span style="color: navy;">Weather:</span> delay due to weather condition ranked 0 to 10, 0 being mild and 10 being extreme</li>
+  <li><span style="color: navy;">Support_Crew_Available:</span> total number of support crew available</li>
+  <li><span style="color: navy;">Baggage_loading_time:</span> time in minutes for loading the baggage onto the aircraft</li>
+</ul>
+</div>
+
+<div style="width: 48%; float: right;">
+<h4 style="color: navy;">Variables Continued</h4>
+<ul>
+  <li><span style="color: navy;">Late_Arrival_o:</span> time in minutes for late arriving aircraft of the same flight</li>
+  <li><span style="color: navy;">Cleaning_o:</span> time in minutes for aircraft cleaning</li>
+  <li><span style="color: navy;">Fueling_o:</span> time in minutes for aircraft fueling</li>
+  <li><span style="color: navy;">Security_o:</span> time in minutes for security checking</li>
+  <li><span style="color: navy;">Arr_Delay:</span> flight arrival delay in minutes</li>
+</ul>
+</div>
+
+<div style="clear: both;"></div>
+
+<div style="clear: both;"></div>
+
+<h4>Variables of Interest</h4>
+<p>Dependent variable: <span style="color: navy;">Arr_Delay</span><br>Independent variable: <span style="color: navy;">Number_of_Flights</span></p>
+
+
+---
+class: inverse1 center middle 
+
+<h1 align="center"> A look inside the Flight Delay dataset </h1>
+  <BR>
+
+```{r echo=FALSE}
+flight_delay_data <- read.csv("/Users/kyleknox/Documents/M.S. Applied Statistics/SPRING 2024/STA533/regression/Flight_delay-data.csv")
+DT::datatable(flight_delay_data, fillContainer = FALSE, options = list(autoWidth = TRUE, pageLength = 6, scrollX = TRUE))
+
+```
+---
+<h1 align="center"> Plot of Flight Arrival Delay vs. Number of Flights </h1>
+  <BR>
+<div style="text-align: center;">
+<img src='img/arrivalsvsdelay.png' width="400" height="300">
+
+<p>It appears as the number of flights increases the length in minutes of the arrival delay also increases.</p>
+</div>
+
+---
+<h1 align="center"> Modeling of Number of flights and Arrival Delay </h1>
+  <BR>
+<table style="text-align:center">
+  <tr>
+    <th>Variable</th>
+    <th>Coefficient (SE)</th>
+  </tr>
+  <tr>
+    <td style="text-align:left">Number_of_flights</td>
+    <td>0.009 (0.0001)<sup>***</sup></td>
+  </tr>
+  <tr>
+    <td style="text-align:left">Constant</td>
+    <td>-302.583 (4.298)<sup>***</sup></td>
+  </tr>
+  <tr>
+    <td colspan="2" style="border-bottom: 1px solid black"></td>
+  </tr>
+  <tr>
+    <td colspan="2" style="text-align:left"><strong>Linear Regression Equation:</strong> Arr_Delay = -302.583 + 0.009 * Number_of_flights</td>
+  </tr>
+  <tr>
+    <td colspan="2" style="border-bottom: 1px solid black"></td>
+  </tr>
+  <tr>
+    <td>Observations</td>
+    <td>3,593</td>
+  </tr>
+  <tr>
+    <td>R-squared</td>
+    <td>0.677</td>
+  </tr>
+  <tr>
+    <td>Adjusted R-squared</td>
+    <td>0.677</td>
+  </tr>
+  <tr>
+    <td>Residual Std. Error</td>
+    <td>16.603 (df = 3591)</td>
+  </tr>
+  <tr>
+    <td>F Statistic</td>
+    <td>7,538.210<sup>***</sup> (df = 1; 3591)</td>
+  </tr>
+  <tr>
+    <td colspan="2" style="border-bottom: 1px solid black"></td>
+  </tr>
+  <tr>
+    <td colspan="2" style="text-align:left"><em>Note:</em> <sup>*</sup>p<0.1; <sup>**</sup>p<0.05; <sup>***</sup>p<0.01</td>
+  </tr>
+</table>
+
+
+---
+<style>
+  ul {
+    padding-left: 20px; /* Adjust the left padding to increase or decrease spacing */
+  }
+  li {
+    margin-bottom: 10px; /* Adjust the margin-bottom to add more space between bullet points */
+  }
+</style>
+
+<h1 align="center"> Interpretations of the Model </h1>
+<BR>
+
+<ul>
+  <li>With the addition of 1 flight, the arrival delay increases by 0.009 minutes.</li>
+  <li>When the number of flights is 0, the estimated delay is -302.583 minutes.</li>
+  <li>The p-value of <0.0009 indicates that the relationship between the number of flights and the minutes a flight is delayed is significant.</li>
+  <li>The R-squared value of 0.677 indicates that approximately 67.7% of the variation in the arrival delay can be explained by the number of flights.</li>
+  <li>Overall, the number of flights has a statistically significant effect on the arrival delay.</li>
+</ul>
+
+<div style="text-align: center;">
+    <img src="img/flyingplane.gif" width="350" height="300">
+</div>
+---
+<h1 align="center"> The ANOVA Model </h1>
+  <BR>
+<table style="text-align:center">
+  <tr>
+    <th colspan="6" style="border-bottom: 1px solid black">Summary Statistics</th>
+  </tr>
+  <tr>
+    <th>Statistic</th>
+    <th>N</th>
+    <th>Mean</th>
+    <th>Standard Deviation</th>
+    <th>Minimum</th>
+    <th>Maximum</th>
+  </tr>
+  <tr>
+    <td colspan="6" style="border-bottom: 1px solid black"></td>
+  </tr>
+  <tr>
+    <td style="text-align:left">Degrees of Freedom (Df)</td>
+    <td>2</td>
+    <td>1,796</td>
+    <td>2,538.51</td>
+    <td>1</td>
+    <td>3,591</td>
+  </tr>
+  <tr>
+    <td style="text-align:left">Sum of Squares</td>
+    <td>2</td>
+    <td>1,533,889</td>
+    <td>769,369.10</td>
+    <td>989,862.50</td>
+    <td>2,077,915</td>
+  </tr>
+  <tr>
+    <td style="text-align:left">Mean Square</td>
+    <td>2</td>
+    <td>1,039,095</td>
+    <td>1,469,113</td>
+    <td>275.65</td>
+    <td>2,077,915</td>
+  </tr>
+  <tr>
+    <td style="text-align:left">F Value</td>
+    <td>1</td>
+    <td>7,538.21</td>
+    <td>N/A</td>
+    <td>7,538.21</td>
+    <td>7,538.21</td>
+  </tr>
+  <tr>
+    <td style="text-align:left">p-value (Pr(> F))</td>
+    <td>1</td>
+    <td>0.000</td>
+    <td>N/A</td>
+    <td>0</td>
+    <td>0</td>
+  </tr>
+  <tr>
+    <td colspan="6" style="border-bottom: 1px solid black"></td>
+  </tr>
+</table>
+---
+<style>
+  ul {
+    padding-left: 20px; /* Adjust the left padding to increase or decrease spacing */
+  }
+  li {
+    margin-bottom: 10px; /* Adjust the margin-bottom to add more space between bullet points */
+  }
+</style>
+
+<h1 align="center"> Interpretations of the ANOVA Model </h1>
+<BR>
+
+<ul>The number of flights has a significant impact on the arrival delay, shown by the low p-value of < 2.2e-16.</li>
+  <li>The higher the F-statistic the better the fit.  With an F-statistic of 7,538.2, there is a strong overall fit of the model.</li>
+  <li>The mean square value of 276 indicates the average variability not accounted for by the model.</li>
+  <li>The mean square value of 2,077,915 suggest a large amount of variability is explained by the number of flights.</li>
+  <li>Overall, the number of flights significantly influences arrival delay.</li>
+</ul>
+
+<div style="text-align: center;">
+    <img src="img/traffic.jpeg" width="300" height="250">
+</div>
+---
+<h1 align="center"> Model of the Linear Regression Line </h1>
+<BR>
+<div style="text-align: center;">
+    <img src="img/regression.png" width="600" height="450">
+</div>
+---
+</style>
+
+<h1 align="center"> Overall Conslusions </h1>
+<BR>
+
+<ul>
+<li>The linear regression model confirms the significance of number of flights on arrival delay.</li>
+  <li>The adjusted r-squared regression model of 0.6772, suggests that 67.72% of the variability in arrival delays is explained by the number of flights.</li>
+  <li>The ANOVA model supported the claim that the number of flights has a significant effect on arrival delay.</li>
+  <li>The overall extremely low p-value in the ANOVA model solidifies the model provides a strong fit of the data.</li>
+---
+# Thank you!
+
+Slides created via the R packages:
+
+[**xaringan**](https://github.com/yihui/xaringan)<br>
+[gadenbuie/xaringanthemer](https://github.com/gadenbuie/xaringanthemer)
+
+The chakra comes from [remark.js](https://remarkjs.com), [**knitr**](http://yihui.name/knitr), and [R Markdown](https://rmarkdown.rstudio.com).
+
+  
+  

@@ -1,0 +1,78 @@
+---
+title: "Penguins!"
+subtitle: "<img src='penguin.jpeg' width='250' height='200'>"
+author: "Kyle Knox"
+institute: "Plotting Penguin Data<br>"
+date: "Prepared for<br><br>STA553: Data Visualization<br><br>Slides available at: [RPubs URL](https://your-RPubs-url) AND [GitHub URL](https://your-GitHub-url)"
+output:
+  xaringan::moon_reader:
+    css: xaringan-themer01.css
+    nature:
+      slideNumberFormat: "%current%"
+      highlightStyle: github
+      highlightLines: true
+      ratio: 16:9
+      countIncrementalSlides: true
+---
+
+```{r setup, include=FALSE}
+options(htmltools.dir.version = FALSE)
+library(jpeg)
+library(httr)
+library(scales)
+library(xaringanthemer)
+
+style_duo_accent(primary_color = "#397255",
+                 secondary_color = "#FFFFFF",
+                 header_font_google = google_font("Martel"),
+                 text_font_google = google_font("Lato"),
+                 code_font_google = google_font("Fira Mono"))
+
+knitr::opts_chunk$set(
+  fig.width=3, 
+  fig.height=3, 
+  fig.retina=12,
+  out.width = "100%",
+  cache = FALSE,
+  echo = TRUE,
+  message = FALSE, 
+  warning = FALSE,
+  hiline = TRUE
+)
+```
+```{r, fig.width=8, fig.height=5, echo=FALSE}
+  library(jpeg)
+url <- 'https://raw.githubusercontent.com/kyleknox3/STA553/main/penguins/w03-penguins.csv'
+data <-read.csv(url)
+  library(httr)
+
+peng.img <- 'https://github.com/kyleknox3/STA553/blob/main/penguins/penguin.jpeg?raw=true'
+get <- GET(peng.img)
+peng.data <- content(get, "raw")
+my_peng <- readJPEG(peng.data)
+
+bill_length <- data$bill_length_mm
+flipper_width <- data$flipper_length_mm
+species <- data$species
+mass <- data$body_mass_g
+scaled_mass <- mass / max(mass, na.rm = TRUE) * 2
+
+adelie_id <- which(species == "Adelie")
+chinstrap_id <- which(species == "Chinstrap")
+gentoo_id <- which(species == "Gentoo")
+
+library(scales)
+
+col.code <- c(alpha("green", 0.5), alpha("blue", 0.5), alpha("red", 0.5))
+
+plot(bill_length, flipper_width, xlab = "Bill Length (mm)", ylab = "Flipper Length (mm)", 
+     main = "Bill Length vs. Flipper Length", type = "n")
+points(bill_length[adelie_id], flipper_width[adelie_id], pch = 19, col = col.code[1], cex = scaled_mass[adelie_id])
+points(bill_length[chinstrap_id], flipper_width[chinstrap_id], pch = 19, col = col.code[2], cex = scaled_mass[chinstrap_id])
+points(bill_length[gentoo_id], flipper_width[gentoo_id], pch = 19, col = col.code[3], cex = scaled_mass[gentoo_id])
+
+legend("topleft", c("Adelie", "Chinstrap", "Gentoo"), col = c("green", "blue", "red"), pch = c(19, 19, 19), cex = 0.75)
+
+rasterImage(as.raster(my_peng), 33, 205, 36, 218)
+text(40, 228, "The size is proportional to body mass", cex = 0.6)
+```

@@ -1,0 +1,77 @@
+---
+title: "Penguins!"
+subtitle: "<img src='penguin.jpeg' width='250' height='200'>"
+author: "Kyle Knox"
+institute: "Plotting Penguin Data<br>"
+date: "Prepared for<br><br>STA553: Data Visualization<br><br>Slides available at: [RPubs URL](https://your-RPubs-url) AND [GitHub URL](https://your-GitHub-url)"
+output:
+  xaringan::moon_reader:
+    css: xaringan-themer01.css
+    nature:
+      slideNumberFormat: "%current%"
+      highlightStyle: github
+      highlightLines: true
+      ratio: 16:9
+      countIncrementalSlides: true
+---
+
+```{r setup, include=FALSE}
+options(htmltools.dir.version = FALSE)
+library(jpeg)
+library(httr)
+library(scales)
+library(xaringanthemer)
+library(tidyverse)
+
+style_duo_accent(primary_color = "#397255",
+                 secondary_color = "#FFFFFF",
+                 header_font_google = google_font("Martel"),
+                 text_font_google = google_font("Lato"),
+                 code_font_google = google_font("Fira Mono"))
+
+knitr::opts_chunk$set(
+  fig.width=3, 
+  fig.height=3, 
+  fig.retina=12,
+  out.width = "100%",
+  cache = FALSE,
+  echo = TRUE,
+  message = FALSE, 
+  warning = FALSE,
+  hiline = TRUE
+)
+```
+```{r, fig.width=8, fig.height=5, echo=FALSE}
+url <- 'https://raw.githubusercontent.com/kyleknox3/STA553/main/week4/w03-penguins.csv'
+data <-read.csv(url)
+
+peng.img <- 'https://github.com/kyleknox3/STA553/blob/main/week4/penguin.jpeg?raw=true'
+get <- GET(peng.img)
+peng.data <- content(get, "raw")
+my_peng <- readJPEG(peng.data)
+
+penguins2 <- na.omit(penguins)
+
+indices <- which(penguins$species %in% c("Adelie", "Gentoo") &
+                 penguins$island %in% c("Biscoe", "Torgersen") &
+                 penguins$body_mass_g > 3500 & penguins$body_mass_g < 5000)
+
+
+penguins2$BMI <- penguins2$body_mass_g / 4000
+penguins2 <- penguins2[, !(names(penguins2) %in% c("X", "sex", "year", "body_mass_g"))]
+
+ggplot(penguins2, aes(x = bill_length_mm, y = flipper_length_mm, color = species, size = BMI)) +
+  geom_point(alpha = 0.6) +
+  scale_size_continuous(range = c(1, 6)) +
+  geom_smooth(method = "lm", se = FALSE, aes(color = species)) +
+  theme_minimal() +
+  labs(title = "Bill Length vs. Flipper Length by Species",
+       subtitle = "Point size proportional to BMI",
+       x = "Bill Length (mm)",
+       y = "Flipper Length (mm)",
+       size = "BMI") +
+  theme(legend.position = "bottom")
+
+rasterImage(as.raster(my_peng), 33, 205, 36, 218)
+text(40, 228, "The size is proportional to body mass", cex = 0.6)
+```

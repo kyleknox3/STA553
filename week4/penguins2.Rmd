@@ -75,13 +75,12 @@ ggplot(penguins2, aes(x = bill_length_mm, y = flipper_length_mm, color = species
 <div style="width: 90%; margin: 0 auto; text-align: justify; border: 1px solid #ccc; padding: 20px; box-sizing: border-box;">
   <p style="text-align: justify;">
   
-Analyzing the scatter plot of bill length vs. flipper length across Adelie and Gentoo penguin species show distinct patterns. Adelie penguins have a tighter clustering, implying a more uniform morphological makeup among individual penguins.  In contrast, Gentoo penguins display a wider variation in both bill and flipper length.  The slope of the regression line for the Gentoo penguins is steeper, suggesting a stronger positive correlation between bill and flipper length when compared to Adelie penguins. Additionally, the point sizes are proportional to BMI, Gentoos typically have a larger body size but also show more variability in BMI.  The observed patterns and correlations could be indicative of varying environmental demands and ecological adaptivity between the species while also displaying the connection between physical characteristics and survival strategies of the species habitat.   
+Analyzing the scatter plot of bill length vs. flipper length across Adelie and Gentoo penguin species show distinct patterns. Adelie penguins have a tighter clustering, implying a more uniform morphological makeup among individual penguins.  In contrast, Gentoo penguins display a wider variation in both bill and flipper length.  The slope of the regression line for the Gentoo penguins is steeper, suggesting a stronger positive correlation between bill and flipper length when compared to Adelie penguins. Additionally, the point sizes are proportional to BMI, Gentoos typically have a larger body size but show less variability in BMI.  The observed patterns and correlations could be indicative of varying environmental demands and ecological adaptivity between the species while also displaying the connection between physical characteristics and survival strategies of the species habitat.   
  </p>
 </div>
 
 <div style="text-align: center;">
     <img src="walking_pengs.gif" width="300" height="200">
 </div>
----
 
 

@@ -3,16 +3,16 @@ title: "Penguins!"
 subtitle: "<img src='penguin.jpeg' width='250' height='200'>"
 author: "Kyle Knox"
 institute: "Plotting Penguin Data<br>"
-date: "Prepared for<br><br>STA553: Data Visualization<br><br>Slides available at: [RPubs URL](https://your-RPubs-url) AND [GitHub URL](https://your-GitHub-url)"
 output:
-  xaringan::moon_reader:
-    css: xaringan-themer01.css
-    nature:
-      slideNumberFormat: "%current%"
-      highlightStyle: github
-      highlightLines: true
-      ratio: 16:9
-      countIncrementalSlides: true
+  html_document:
+    toc: no
+    toc_float: no
+    number_sections: yes
+    toc_collapsed: no
+    code_folding: hide
+    code_download: yes
+    smooth_scroll: yes
+    theme: lumen
 ---
 
 ```{r libs, include=FALSE}
@@ -22,9 +22,7 @@ library(httr)
 library(scales)
 library(xaringanthemer)
 library(tidyverse)
-```
 
-```{r text, include=FALSE}
 options(htmltools.dir.version = FALSE)
 
 style_duo_accent(primary_color = "#397255",
@@ -45,6 +43,7 @@ knitr::opts_chunk$set(
   hiline = TRUE
 )
 ```
+
 ```{r code, fig.width=8, fig.height=4.8, echo=FALSE}
 url <- 'https://raw.githubusercontent.com/kyleknox3/STA553/main/week4/w03-penguins.csv'
 data <- read.csv(url)
@@ -79,8 +78,4 @@ Analyzing the scatter plot of bill length vs. flipper length across Adelie and G
  </p>
 </div>
 
-<div style="text-align: center;">
-    <img src="walking_pengs.gif" width="300" height="200">
-</div>
-
-
+---

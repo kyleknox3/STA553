@@ -1,8 +1,7 @@
 ---
-title: "Penguins!"
+title: "Penguins: Adelie & Gentoo"
 subtitle: "<img src='penguin.jpeg' width='250' height='200'>"
-author: "Kyle Knox"
-institute: "Plotting Penguin Data<br>"
+author: " By: Kyle Knox"
 output:
   html_document:
     toc: no

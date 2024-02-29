@@ -1,0 +1,146 @@
+---
+title: "Income & Life Expectancy Across The World"
+author: "Kyle Knox"
+output:
+  html_document:
+    toc: no
+    toc_float: no
+    number_sections: yes
+    toc_collapsed: no
+    code_folding: hide
+    code_download: yes
+    smooth_scroll: yes
+    theme: lumen
+---
+
+```{r libs, include=FALSE}
+options(htmltools.dir.version = FALSE)
+library(jpeg)
+library(httr)
+library(scales)
+library(xaringanthemer)
+library(tidyverse)
+library(ggplot2)
+
+options(htmltools.dir.version = FALSE)
+
+style_duo_accent(primary_color = "#397255",
+                 secondary_color = "#FFFFFF",
+                 header_font_google = google_font("Martel"),
+                 text_font_google = google_font("Lato"),
+                 code_font_google = google_font("Fira Mono"))
+
+knitr::opts_chunk$set(
+  fig.width=3, 
+  fig.height=3, 
+  fig.retina=12,
+  out.width = "100%",
+  cache = FALSE,
+  echo = TRUE,
+  message = FALSE, 
+  warning = FALSE,
+  hiline = TRUE
+)
+```
+## <span style="color: red;">Cleaning the Data in R</span>
+
+<div style="width: 90%; margin: 0 auto; text-align: justify; #ccc; padding: 20px; box-sizing: border-box;">
+  <p style="text-align: justify;">
+  1.) Read in all four data sets into R. <br>
+  <br>
+      Example:<br>
+      <span style="color: blue;">
+      income <- read.csv("/Users/kyleknox/Documents/M.S. Applied         Statistics/SPRING 2024/STA533/week5/income_per_person.csv", check.names = FALSE)
+      </span><br>
+      <br>
+  2.) Create new datasets that are transposed and oriented correctly. <br>
+  <br>
+        Example: <br>
+        <span style="color: blue;">
+        incomepp <- income %>% <br>
+         gather(key = "year", value = "income", -geo) %>% <br>
+         rename(country = geo) <br></span>
+         <br>
+  3.) Create a new data set using an inner join merging the income_per_person.csv with the life_expectancy_years.csv dataset. <br>
+  <br>
+      Example: <br>
+      <span style="color: blue;">
+      LifeExpIncom <- inner_join(incomepp, lifeyr, by = c("country", "year"))<br></span>
+      <br>
+  4.)Rename all variables in the countries_total.csv and population_total to match the variables in LifeExpIncome. <br>
+  <br>
+      Example: <br>
+      <span style="color: blue;">
+country_year <- countryR %>%
+  rename(country = name)
+country_region <- country_year %>%
+  select(country, region)<br></span>
+  <br>
+  5.) Create a new data set using an inner join merging the new data set LifeExpIncome with the country_year.csv dataset. <br>
+  <br>
+      Example: <br>
+      <span style="color: blue;">
+      LifeIncomeRegion <- inner_join(LifeExpIncom, country_region, by = "country")<br></span>
+      <br>
+  6.) Create a final data set using an inner join merging the new data set LifeIncomeRegion with the new population dataset. <br>
+  <br>
+      Example: <br>
+      <span style="color: blue;">
+      LifeIncomePopulation <- inner_join(LifeIncomeRegion, population_fixed, by = c("country", "year"))<br></span>
+      <br>
+  7.) Save the new data set as a csv to use to create figures. 
+  <br>
+  <br>
+  Example: <br>
+      <span style="color: blue;">write.csv(LifeIncomePopulation, "/Users/kyleknox/Documents/M.S. Applied Statistics/SPRING 2024/STA533/week5/LifeIncomePopulation.csv", row.names = FALSE)<br></span>
+      <br>
+      To see the entire DataCleanup.R file, click  <a href='https://raw.githubusercontent.com/kyleknox3/STA553/main/week5/DataCleanup.R'>HERE</a>
+ </p>
+</div>
+
+## <span style="color: red;">Association between Income and Life Expectancy in 2000: A Story</span>
+```{r code, fig.width=8, fig.height=4.8, echo=FALSE}
+url <- 'https://raw.githubusercontent.com/kyleknox3/STA553/main/week5/data2000.csv'
+data <- read.csv(url)
+data2000 <- na.omit(data)
+
+regions <- c("Asia" = "#332288", "Europe" = "#117733", "Africa" = "#44AA99", "Americas" = "#88CCEE", "Oceania" = "#AA4499")
+
+
+ggplot(data2000, aes(x = income, y = lifeExp, 
+                     color = region, 
+                     size = population)) +
+  geom_point(alpha = 0.5) +
+  scale_size(name = "Population Size") +
+  scale_color_manual(values = regions, name = "Region") +  
+  labs(
+    x = "Income per Person",
+    y = "Life Expectancy",
+    title = "Association between Income and Life Expectancy in 2000",
+    subtitle = "Point size represents population size",
+
+  ) +
+  theme_minimal()
+
+```
+<br>
+<br>
+<div style="text-align: center;"><span style="color: red;">A Look Inside the Plot</span></div>
+
+<div style="width: 95%; margin: 0 auto; text-align: justify; border: 1px solid #ccc; padding: 10px; box-sizing: border-box;">
+  <p style="text-align: justify;">
+The scatter plot visualizes the relationship between income per person and life expectancy across the world in the year 2000. Each point's size represents the countries population size while the color is associated to its region. <br>
+<br>
+The correlation between income and life expectancy is strong with a positive correlation.  Countries with higher incomes tend to have longer life expectancy.  This illustrates the impact economic wealth on health outcomes, this is likely due to better access to healthcare, food resources, and living conditions.  
+<br>
+The different colors signifying the different regions highlight the geographical disparities in income and life expectancy. The European countries, in green, tend to have higher incomes and life expectancy than countries in Africa, in teal. <br>
+<br>
+The varying populations show that some larger countries, like those in the Asia region, have a wide range of income and life expectancy. Although, some countries with large population sizes do not always have the highest incomes, indicating that bigger countries do not necessarily mean they have higher economic wealth. <br>
+<br>
+At the lower end of the income scale shows a dense cluster of points with a steep gradient in life expectancy.  Signifying that even small increases in income within this cluster can potentially lead to significant increases in life expectancy.<br>
+ </p>
+</div>
+<br>
+<br>
+
+  

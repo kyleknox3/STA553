@@ -1,5 +1,6 @@
 library(tidyverse)
 
+
 income <- read.csv("/Users/kyleknox/Documents/M.S. Applied Statistics/SPRING 2024/STA533/week5/income_per_person.csv", check.names = FALSE)
 
 incomepp <- income %>%
@@ -43,4 +44,9 @@ LifeIncomeRegion$year <- as.numeric(LifeIncomeRegion$year)
 LifeIncomePopulation <- inner_join(LifeIncomeRegion, population_fixed, by = c("country", "year"))
 
 write.csv(LifeIncomePopulation, "/Users/kyleknox/Documents/M.S. Applied Statistics/SPRING 2024/STA533/week5/LifeIncomePopulation.csv", row.names = FALSE)
+
+data2000 <- LifeIncomePopulation %>%
+  filter(year == 2000)
+
+write.csv(LifeIncomePopulation, "/Users/kyleknox/Documents/M.S. Applied Statistics/SPRING 2024/STA533/week5/data2000.csv", row.names = FALSE)
 

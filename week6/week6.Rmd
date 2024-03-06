@@ -208,7 +208,7 @@ write.csv(data2015, "/Users/kyleknox/Documents/M.S. Applied Statistics/SPRING 20
 regions <- c("Asia" = "#332288", "Europe" = "#117733", "Africa" = "#44AA99", "Americas" = "#88CCEE", "Oceania" = "#AA4499")
 
 gg <- ggplot(data2015, aes(x = lifeExp, y = income, size = population, 
-      color = region, text = paste("Country:", country,"<br>Population:", population))) +
+      color = region, text = paste("Country:", country,"<br>Population:", population, "<br>Income:", income))) +
   geom_point(alpha = 0.7) + 
   scale_size_continuous(range = c(1, 20)) + 
   theme_minimal() +
@@ -235,7 +235,7 @@ plot <- ggplot(income2, aes(x = lifeExp, y = income, size = population, color = 
   geom_point(alpha = 0.7, show.legend = TRUE, aes(group = year)) +
   scale_size(range = c(2, 12), name = "Population Size") +
   scale_color_manual(values = regions, name = "Region") +
-  labs(title = 'Year: {frame_time}', x = 'Life Expectancy', y = 'Income') +
+  labs(title= 'Life Expectancy and Income Over the Years', subtitle = 'Year: {frame_time}', x = 'Life Expectancy', y = 'Income') +
   theme_minimal() +
   transition_time(year) +
   ease_aes('linear')

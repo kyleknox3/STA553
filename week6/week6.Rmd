@@ -4,17 +4,17 @@ author: "Kyle Knox"
 date: "Week 6"
 output:
   html_document: 
-  toc: yes
-  toc_depth: 4
-  toc_float: yes
-  fig_width: 6
-  number_sections: yes
-  toc_collapsed: yes
-  code_folding: hide
-  code_download: yes
-  smooth_scroll: true
-  theme: readable
-  fig_height: 4
+    toc: yes
+    toc_depth: 4
+    toc_float: yes
+    fig_width: 6
+    number_sections: yes
+    toc_collapsed: yes
+    code_folding: hide
+    code_download: yes
+    smooth_scroll: true
+    theme: readable
+    fig_height: 4
 ---
   
   <style type="text/css">

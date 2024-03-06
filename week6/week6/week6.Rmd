@@ -235,7 +235,7 @@ plot <- ggplot(income2, aes(x = lifeExp, y = income, size = population, color = 
   geom_point(alpha = 0.7, show.legend = TRUE, aes(group = year)) +
   scale_size(range = c(2, 12), name = "Population Size") +
   scale_color_manual(values = regions, name = "Region") +
-  labs(title = 'Year: {frame_time}', x = 'Life Expectancy', y = 'Income') +
+  labs(title= 'Life Expectancy and Income Over the Years', subtitle = 'Year: {frame_time}', x = 'Life Expectancy', y = 'Income') +
   theme_minimal() +
   transition_time(year) +
   ease_aes('linear')

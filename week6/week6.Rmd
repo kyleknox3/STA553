@@ -1,5 +1,5 @@
 ---
-title: "Life Expectancy and Income for the Year 2015"
+title: "Life Expectancy and Income Across the World"
 author: "Kyle Knox"
 date: "Week 6"
 output:

@@ -1,0 +1,262 @@
+---
+title: "Life Expectancy and Income for the Year 2015"
+author: "Kyle Knox"
+date: "Week 6"
+output:
+  html_document: 
+    toc: yes
+    toc_depth: 4
+    toc_float: yes
+    fig_width: 6
+    number_sections: yes
+    toc_collapsed: yes
+    code_folding: hide
+    code_download: yes
+    smooth_scroll: true
+    theme: readable
+    fig_height: 4
+---
+  
+  <style type="text/css">
+  
+  div#TOC li {
+list-style:none;
+background-color:lightgray;
+background-image:none;
+background-repeat:none;
+background-position:0;
+font-family: Arial, Helvetica, sans-serif;
+color: #780c0c;
+  }
+
+/* mouse over link */
+  div#TOC a:hover {
+color: red;
+}
+
+/* unvisited link */
+  div#TOC a:link {
+color: blue;
+}
+
+
+
+h1.title {
+  font-size: 24px;
+  color: Darkblue;
+  text-align: center;
+  font-family: Arial, Helvetica, sans-serif;
+  font-variant-caps: normal;
+}
+h4.author { 
+  font-size: 18px;
+  font-family: "Times New Roman", Times, serif;
+  color: DarkRed;
+  text-align: center;
+}
+h4.date { 
+  font-size: 18px;
+  font-family: "Times New Roman", Times, serif;
+  color: DarkBlue;
+  text-align: center;
+}
+h1 {
+  font-size: 22px;
+  font-family: "Times New Roman", Times, serif;
+  color: darkred;
+  text-align: center;
+}
+h2 { /
+    font-size: 18px;
+  font-family: "Times New Roman", Times, serif;
+  color: navy;
+  text-align: left;
+}
+
+h3 { 
+  font-size: 15px;
+  font-family: "Times New Roman", Times, serif;
+  color: navy;
+  text-align: left;
+}
+
+h4 { /* Header 4 - and the author and data headers use this too  */
+    font-size: 18px;
+  font-family: "Times New Roman", Times, serif;
+  color: darkred;
+  text-align: left;
+}
+
+/* unvisited link */
+  a:link {
+    color: green;
+  }
+
+/* visited link */
+  a:visited {
+    color: green;
+  }
+
+/* mouse over link */
+  a:hover {
+    color: red;
+  }
+
+/* selected link */
+  a:active {
+    color: yellow;
+  }
+
+</style>
+  
+  
+  ```{r setup, include=FALSE}
+# code chunk specifies whether the R code, warnings, and output 
+# will be included in the output files.
+options(repos = list(CRAN="http://cran.rstudio.com/"))
+if (!require("tidyverse")) {
+  install.packages("tidyverse")
+  library(tidyverse)
+}
+if (!require("knitr")) {
+  install.packages("knitr")
+  library(knitr)
+}
+if (!require("cowplot")) {
+  install.packages("cowplot")
+  library(cowplot)
+}
+if (!require("latex2exp")) {
+  install.packages("latex2exp")
+  library(latex2exp)
+}
+if (!require("plotly")) {
+  install.packages("plotly")
+  library(plotly)
+}
+if (!require("gapminder")) {
+  install.packages("gapminder")
+  library(gapminder)
+}
+if (!require("png")) {
+  install.packages("png")             # Install png package
+  library("png")
+}
+if (!require("RCurl")) {
+  install.packages("RCurl")             # Install RCurl package
+  library("RCurl")
+}
+if (!require("colourpicker")) {
+  install.packages("colourpicker")              
+  library("colourpicker")
+}
+if (!require("gifski")) {
+  install.packages("gifski")              
+  library("gifski")
+}
+if (!require("magick")) {
+  install.packages("magick")              
+  library("magick")
+}
+if (!require("grDevices")) {
+  install.packages("grDevices")              
+  library("grDevices")
+}
+### ggplot and extensions
+if (!require("ggplot2")) {
+  install.packages("ggplot2")              
+  library("ggplot2")
+}
+if (!require("gganimate")) {
+  install.packages("gganimate")              
+  library("gganimate")
+}
+if (!require("ggridges")) {
+  install.packages("ggridges")              
+  library("ggridges")
+}
+if (!require("dplyr")) {
+  install.packages("dplyr")              
+  library("dplyr")
+}
+if (!require("htmltools")) {
+  install.packages("htmltools")              
+  library("htmltools")
+}
+if (!require("rmarkdown")) {
+  install.packages("rmarkdown")              
+  library("rmarkdown")
+}
+# knitr::opts_knit$set(root.dir = "/Users/kyleknox/Documents/M.S. Applied Statistics/SPRING 2024/STA533/week6)
+# knitr::opts_knit$set(root.dir = "C:\\STA490\\w05")
+
+knitr::opts_chunk$set(echo = TRUE,       
+                      warning = FALSE,   
+                      result = TRUE,   
+                      message = FALSE)
+```
+```{r code, fig.width=10, fig.height=6.8}
+url <- 'https://raw.githubusercontent.com/kyleknox3/STA553/main/week6/LifeIncomePopulation.csv'
+data <- read.csv(url)
+income <- na.omit(data)
+
+data2015 <- income %>%
+  filter(year == 2015)
+
+write.csv(data2015, "/Users/kyleknox/Documents/M.S. Applied Statistics/SPRING 2024/STA533/week6/data2015.csv", row.names = FALSE)
+
+regions <- c("Asia" = "#332288", "Europe" = "#117733", "Africa" = "#44AA99", "Americas" = "#88CCEE", "Oceania" = "#AA4499")
+
+gg <- ggplot(data2015, aes(x = lifeExp, y = income, size = population, 
+      color = region, text = paste("Country:", country,"<br>Population:", population))) +
+  geom_point(alpha = 0.7) + 
+  scale_size_continuous(range = c(1, 20)) + 
+  theme_minimal() +
+  labs(title = "Life Expectancy vs. Income in 2015",
+       x = "Life Expectancy",
+       y = "Income") +
+  scale_color_manual(values = regions, name = "Region") + 
+  geom_point(shape = 21, colour = "black", fill = NA) 
+
+
+plotly_gg <- ggplotly(gg, tooltip = "text")
+
+plotly_gg
+
+```
+```{r plot-animation, fig.width=10, fig.height=6.8}
+url <- 'https://raw.githubusercontent.com/kyleknox3/STA553/main/week6/LifeIncomePopulation.csv'
+data <- read.csv(url)
+income2 <- na.omit(data)
+
+regions <- c("Asia" = "#332288", "Europe" = "#117733", "Africa" = "#44AA99", "Americas" = "#88CCEE", "Oceania" = "#AA4499")
+
+plot <- ggplot(income2, aes(x = lifeExp, y = income, size = population, color = region)) +
+  geom_point(alpha = 0.7, show.legend = TRUE, aes(group = year)) +
+  scale_size(range = c(2, 12), name = "Population Size") +
+  scale_color_manual(values = regions, name = "Region") +
+  labs(title = 'Year: {frame_time}', x = 'Life Expectancy', y = 'Income') +
+  theme_minimal() +
+  transition_time(year) +
+  ease_aes('linear')
+
+animate(plot, width = 900, height = 500, duration = 30)
+```
+<br>
+<br>
+<div style="text-align: center;"><span style="color: red;">A Look Inside the Plot</span></div>
+
+<div style="width: 95%; margin: 0 auto; text-align: justify; border: 1px solid #ccc; padding: 10px; box-sizing: border-box;">
+  <p style="text-align: justify;">
+There has been a significant increase in the average life expectancy globally since the early 1800s.  The shift is more prevalent in the early 20th century.  These life expectancy improvements could be related to advancements in healthcare, nutrition, and living conditions over time. <br>
+<br>
+Income has an overall positive trend, with a steep incline after the mid 20th century.  Some causes for these increases could be a result of industrialization, globalization, and technological advances that have influenced productivity. There is a significant increase in income in the late 20th century, which could be indicative of economic expansion. <br>
+<br>
+The worlds population has also shown significant growth since the 1800s, with an acceleration in the rate of increase from the 20th century to present day.  This increased population could be a result of decreased mortality rates, medical advancements, and other factors leading to higher birth rates and lower death rates. With a continued increase in the global population challenges like resource management, sustainability, and a detrimental environmental impact will arise.<br>
+<br>
+With the increased income, population, and life expectancy over the past few centuries, it shows the the global economic increases for the worlds population.  However, these increases do provide challenges for the future in sustainability and the distribution of resources. These challenges are not just limited regionally but also globally.<br>
+ </p>
+</div>
+<br>
+<br>
+

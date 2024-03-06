@@ -175,6 +175,18 @@ if (!require("ggridges")) {
   install.packages("ggridges")              
   library("ggridges")
 }
+if (!require("dplyr")) {
+  install.packages("dplyr")              
+  library("dplyr")
+}
+if (!require("htmltools")) {
+  install.packages("htmltools")              
+  library("htmltools")
+}
+if (!require("rmarkdown")) {
+  install.packages("rmarkdown")              
+  library("rmarkdown")
+}
 # knitr::opts_knit$set(root.dir = "/Users/kyleknox/Documents/M.S. Applied Statistics/SPRING 2024/STA533/week6)
 # knitr::opts_knit$set(root.dir = "C:\\STA490\\w05")
 
@@ -183,55 +195,68 @@ knitr::opts_chunk$set(echo = TRUE,
                       result = TRUE,   
                       message = FALSE)
 ```
-```{r code, fig.width=8, fig.height=4.8, echo=FALSE}
-income <- read.csv("/Users/kyleknox/Documents/M.S. Applied Statistics/SPRING 2024/STA533/week5/income_per_person.csv", check.names = FALSE)
+```{r code, fig.width=10, fig.height=6.8}
+url <- 'https://raw.githubusercontent.com/kyleknox3/STA553/main/week6/LifeIncomePopulation.csv'
+data <- read.csv(url)
+income <- na.omit(data)
 
-incomepp <- income %>%
-  gather(key = "year", value = "income", -geo) %>%
-  rename(country = geo)
-
-print(incomepp)
-
-life <- read.csv("/Users/kyleknox/Documents/M.S. Applied Statistics/SPRING 2024/STA533/week5/life_expectancy_years.csv", check.names = FALSE)
-
-lifeyr <- life %>%
-  gather(key = "year", value = "income", -geo) %>%
-  rename(country = geo)
-
-print(lifeyr)
-
-LifeExpIncom <- inner_join(incomepp, lifeyr, by = c("country", "year"))
-
-LifeExpIncom <- LifeExpIncom %>%
-  rename(income = income.x, lifeExp = income.y)
-
-print(LifeExpIncom)
-
-countryR <- read.csv("/Users/kyleknox/Documents/M.S. Applied Statistics/SPRING 2024/STA533/week5/countries_total.csv", check.names = FALSE)
-PopT <- read.csv("/Users/kyleknox/Documents/M.S. Applied Statistics/SPRING 2024/STA533/week5/population_total.csv", check.names = FALSE)
-
-country_year <- countryR %>%
-  rename(country = name)
-country_region <- country_year %>%
-  select(country, region)
-
-LifeIncomeRegion <- inner_join(LifeExpIncom, country_region, by = "country")
-
-population_fixed <- PopT %>%
-  gather(key = "year", value = "population", -geo) %>%
-  rename(country = geo) %>%
-  mutate(year = as.numeric(year))
-
-LifeIncomeRegion$year <- as.numeric(LifeIncomeRegion$year)
-
-LifeIncomePopulation <- inner_join(LifeIncomeRegion, population_fixed, by = c("country", "year"))
-
-write.csv(LifeIncomePopulation, "/Users/kyleknox/Documents/M.S. Applied Statistics/SPRING 2024/STA533/week5/LifeIncomePopulation.csv", row.names = FALSE)
-
-data2000 <- LifeIncomePopulation %>%
+data2015 <- income %>%
   filter(year == 2015)
 
-write.csv(LifeIncomePopulation, "/Users/kyleknox/Documents/M.S. Applied Statistics/SPRING 2024/STA533/week5/data2000.csv", row.names = FALSE)
+write.csv(data2015, "/Users/kyleknox/Documents/M.S. Applied Statistics/SPRING 2024/STA533/week6/data2015.csv", row.names = FALSE)
 
+regions <- c("Asia" = "#332288", "Europe" = "#117733", "Africa" = "#44AA99", "Americas" = "#88CCEE", "Oceania" = "#AA4499")
+
+gg <- ggplot(data2015, aes(x = lifeExp, y = income, size = population, 
+      color = region, text = paste("Country:", country,"<br>Population:", population))) +
+  geom_point(alpha = 0.7) + 
+  scale_size_continuous(range = c(1, 20)) + 
+  theme_minimal() +
+  labs(title = "Life Expectancy vs. Income in 2015",
+       x = "Life Expectancy",
+       y = "Income") +
+  scale_color_manual(values = regions, name = "Region") + 
+  geom_point(shape = 21, colour = "black", fill = NA) 
+
+
+plotly_gg <- ggplotly(gg, tooltip = "text")
+
+plotly_gg
 
 ```
+```{r plot-animation, fig.width=10, fig.height=6.8}
+url <- 'https://raw.githubusercontent.com/kyleknox3/STA553/main/week6/LifeIncomePopulation.csv'
+data <- read.csv(url)
+income2 <- na.omit(data)
+
+regions <- c("Asia" = "#332288", "Europe" = "#117733", "Africa" = "#44AA99", "Americas" = "#88CCEE", "Oceania" = "#AA4499")
+
+plot <- ggplot(income2, aes(x = lifeExp, y = income, size = population, color = region)) +
+  geom_point(alpha = 0.7, show.legend = TRUE, aes(group = year)) +
+  scale_size(range = c(2, 12), name = "Population Size") +
+  scale_color_manual(values = regions, name = "Region") +
+  labs(title = 'Year: {frame_time}', x = 'Life Expectancy', y = 'Income') +
+  theme_minimal() +
+  transition_time(year) +
+  ease_aes('linear')
+
+animate(plot, width = 900, height = 500, duration = 30)
+```
+<br>
+<br>
+<div style="text-align: center;"><span style="color: red;">A Look Inside the Plot</span></div>
+
+<div style="width: 95%; margin: 0 auto; text-align: justify; border: 1px solid #ccc; padding: 10px; box-sizing: border-box;">
+  <p style="text-align: justify;">
+There has been a significant increase in the average life expectancy globally since the early 1800s.  The shift is more prevalent in the early 20th century.  These life expectancy improvements could be related to advancements in healthcare, nutrition, and living conditions over time. <br>
+<br>
+Income has an overall positive trend, with a steep incline after the mid 20th century.  Some causes for these increases could be a result of industrialization, globalization, and technological advances that have influenced productivity. There is a significant increase in income in the late 20th century, which could be indicative of economic expansion. <br>
+<br>
+The worlds population has also shown significant growth since the 1800s, with an acceleration in the rate of increase from the 20th century to present day.  This increased population could be a result of decreased mortality rates, medical advancements, and other factors leading to higher birth rates and lower death rates. With a continued increase in the global population challenges like resource management, sustainability, and a detrimental environmental impact will arise.<br>
+<br>
+With the increased income, population, and life expectancy over the past few centuries, it shows the the global economic increases for the worlds population.  However, these increases do provide challenges for the future in sustainability and the distribution of resources. These challenges are not just limited regionally but also globally.<br>
+ </p>
+</div>
+<br>
+<br>
+

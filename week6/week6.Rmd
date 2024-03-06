@@ -224,6 +224,19 @@ plotly_gg <- ggplotly(gg, tooltip = "text")
 plotly_gg
 
 ```
+
+<br>
+<br>
+<div style="text-align: center;"><span style="color: red;">A Look Inside 2015</span></div>
+
+<div style="width: 95%; margin: 0 auto; text-align: justify; border: 1px solid #ccc; padding: 10px; box-sizing: border-box;">
+  <p style="text-align: justify;">
+In the year 2015, there is a positive correlation between life expectancy and income. The higher the average income for a country, the better access individuals have to healthcare, nutrition, and living conditions which directly impact life expectancy. The varying income across the regions of the world show how economic difficulties influence life expectancy.  Countries in more developed regions have higher income and longer life expectancy compared to those of the underdeveloped world. However, when looking at population, the countries with larger populations could have a lower average due to resource allocation and the wealth gap. Therefore, looking at larger countries median income may be more beneficial. Overall, there is a general global trend towards higher life expectancy and income, signifying worldwide improvements in healthcare, technology, and economic development.  Although, it is apparent that these improvements are not evenly distributed across the all regions of the world. <br> 
+ </p>
+</div>
+<br>
+<br>
+
 ```{r plot-animation, fig.width=10, fig.height=6.8}
 url <- 'https://raw.githubusercontent.com/kyleknox3/STA553/main/week6/LifeIncomePopulation.csv'
 data <- read.csv(url)
@@ -244,7 +257,7 @@ animate(plot, width = 900, height = 500, duration = 30)
 ```
 <br>
 <br>
-<div style="text-align: center;"><span style="color: red;">A Look Inside the Plot</span></div>
+<div style="text-align: center;"><span style="color: red;">A Look Inside the Income and Life Expextancy Across the World</span></div>
 
 <div style="width: 95%; margin: 0 auto; text-align: justify; border: 1px solid #ccc; padding: 10px; box-sizing: border-box;">
   <p style="text-align: justify;">

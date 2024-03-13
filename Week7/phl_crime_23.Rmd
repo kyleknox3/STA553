@@ -1,0 +1,252 @@
+---
+title: "Interactive Map of Philadelphia's Crime Data in 2023"
+author: "Kyle Knox"
+date: "Week 7"
+output:
+  html_document: 
+    toc: false
+    toc_depth: 4
+    toc_float: false
+    fig_width: 6
+    number_sections: yes
+    toc_collapsed: yes
+    code_folding: hide
+    code_download: yes
+    smooth_scroll: true
+    theme: readable
+    fig_height: 4
+---
+  
+  <style type="text/css">
+  
+  div#TOC li {
+list-style:none;
+background-color:lightgray;
+background-image:none;
+background-repeat:none;
+background-position:0;
+font-family: Arial, Helvetica, sans-serif;
+color: #780c0c;
+  }
+
+/* mouse over link */
+  div#TOC a:hover {
+color: red;
+}
+
+/* unvisited link */
+  div#TOC a:link {
+color: blue;
+}
+
+
+
+h1.title {
+  font-size: 24px;
+  color: Darkblue;
+  text-align: center;
+  font-family: Arial, Helvetica, sans-serif;
+  font-variant-caps: normal;
+}
+h4.author { 
+  font-size: 18px;
+  font-family: "Times New Roman", Times, serif;
+  color: DarkRed;
+  text-align: center;
+}
+h4.date { 
+  font-size: 18px;
+  font-family: "Times New Roman", Times, serif;
+  color: DarkBlue;
+  text-align: center;
+}
+h1 {
+  font-size: 22px;
+  font-family: "Times New Roman", Times, serif;
+  color: darkred;
+  text-align: center;
+}
+h2 { /
+    font-size: 18px;
+  font-family: "Times New Roman", Times, serif;
+  color: navy;
+  text-align: left;
+}
+
+h3 { 
+  font-size: 15px;
+  font-family: "Times New Roman", Times, serif;
+  color: navy;
+  text-align: left;
+}
+
+h4 { /* Header 4 - and the author and data headers use this too  */
+    font-size: 18px;
+  font-family: "Times New Roman", Times, serif;
+  color: darkred;
+  text-align: left;
+}
+
+/* unvisited link */
+  a:link {
+    color: green;
+  }
+
+/* visited link */
+  a:visited {
+    color: green;
+  }
+
+/* mouse over link */
+  a:hover {
+    color: red;
+  }
+
+/* selected link */
+  a:active {
+    color: yellow;
+  }
+
+</style>
+  
+  
+  ```{r setup, include=FALSE}
+# code chunk specifies whether the R code, warnings, and output 
+# will be included in the output files.
+options(repos = list(CRAN="http://cran.rstudio.com/"))
+if (!require("tidyverse")) {
+  install.packages("tidyverse")
+  library(tidyverse)
+}
+if (!require("knitr")) {
+  install.packages("knitr")
+  library(knitr)
+}
+if (!require("cowplot")) {
+  install.packages("cowplot")
+  library(cowplot)
+}
+if (!require("latex2exp")) {
+  install.packages("latex2exp")
+  library(latex2exp)
+}
+if (!require("plotly")) {
+  install.packages("plotly")
+  library(plotly)
+}
+if (!require("gapminder")) {
+  install.packages("gapminder")
+  library(gapminder)
+}
+if (!require("png")) {
+  install.packages("png")             # Install png package
+  library("png")
+}
+if (!require("RCurl")) {
+  install.packages("RCurl")             # Install RCurl package
+  library("RCurl")
+}
+if (!require("colourpicker")) {
+  install.packages("colourpicker")              
+  library("colourpicker")
+}
+if (!require("gifski")) {
+  install.packages("gifski")              
+  library("gifski")
+}
+if (!require("magick")) {
+  install.packages("magick")              
+  library("magick")
+}
+if (!require("grDevices")) {
+  install.packages("grDevices")              
+  library("grDevices")
+}
+### ggplot and extensions
+if (!require("ggplot2")) {
+  install.packages("ggplot2")              
+  library("ggplot2")
+}
+if (!require("gganimate")) {
+  install.packages("gganimate")              
+  library("gganimate")
+}
+if (!require("ggridges")) {
+  install.packages("ggridges")              
+  library("ggridges")
+}
+if (!require("dplyr")) {
+  install.packages("dplyr")              
+  library("dplyr")
+}
+if (!require("htmltools")) {
+  install.packages("htmltools")              
+  library("htmltools")
+}
+if (!require("rmarkdown")) {
+  install.packages("rmarkdown")              
+  library("rmarkdown")
+}
+if (!require("leaflet")) {
+  install.packages("leaflet")              
+  library("leaflet")
+}
+# knitr::opts_knit$set(root.dir = "/Users/kyleknox/Documents/M.S. Applied Statistics/SPRING 2024/STA533/week7)
+# knitr::opts_knit$set(root.dir = "C:\\STA490\\w05")
+
+knitr::opts_chunk$set(echo = TRUE,       
+                      warning = FALSE,   
+                      result = TRUE,   
+                      message = FALSE)
+```
+```{r code, fig.height= 7, fig.width= 9}
+url <- 'https://raw.githubusercontent.com/kyleknox3/STA553/main/Week7/phl_crime.csv'
+phl <- read.csv(url)
+
+phl <- phl %>%
+  mutate(date = as.POSIXct(date, format = "%m/%d/%Y %H:%M"),
+         year = as.numeric(format(date, "%Y")))
+
+phl2023 <- phl %>%
+  filter(year == 2023)
+
+phl2023$fatal <- as.factor(phl2023$fatal)
+
+fig <- leaflet(phl2023) %>%
+  setView(lat = 39.9526, lng = -75.1652, zoom=12.5) %>% 
+  addTiles(group="OSM") %>%  
+  addProviderTiles(providers$CartoDB.DarkMatter, group="Dark") %>%
+  addProviderTiles(providers$CartoDB.Positron, group="Light") %>%
+  addCircleMarkers(lng = ~lng, lat = ~lat, 
+                   color = ~ifelse(fatal == "Fatal", "red", "blue"), 
+                   radius = 2,
+                   popup = ~paste("Date: ", format(date, "%Y-%m-%d %H:%M"),
+                                  "<br>Fatal: ", fatal,
+                                  "<br>Location: ", paste(street_name, block_number, sep=", ")),
+                   group = "Crime Data") %>%
+  addLayersControl(baseGroups = c('OSM', 'Dark', 'Light'),
+                   overlayGroups = c("Crime Data"),
+                   options = layersControlOptions(collapsed = FALSE))
+
+fig
+
+
+````
+
+
+<br>
+<br>
+<div style="text-align: center;"><span style="color: black;">Philadelphia's Crimes 2023</span></div>
+
+<div style="width: 95%; margin: 0 auto; text-align: justify; border: 1px solid #ccc; padding: 10px; box-sizing: border-box;">
+  <p style="text-align: justify;">
+Our analysis of Philadelphia's crime data for 2023 uncovered several key insights into the nature and distribution of criminal activity across the city.  With a total of 1,666 reported crimes, the data provides an overview of the safety landscape. <br>
+<br>
+Of the crimes reported, 373 incidents were fatal and 1,293 were not fatal.  However, the geographical distribution of these crimes reveals specific areas with higher instances, providing insight to where criminal activity is concentrated. The zip code 19134, popularly known as Kensington, emerged as the area with the most crimes, reaching 164 incidents.  However, it was closely followed by zip codes 19140 (N. PHL), 19132 (N. PHL), 19139 (W. PHL), and 19124 (N. PHL), which reported 133, 120, 117, and 102 incidents.<br>
+<br>
+The most effected demographic is young adults (25-34 years), with 540 incidents, closely followed by youth (15-24 years), at 530 incidents, showing a significant impact on younger populations in the city. Adults (35-54 years) also faced substantial number of crimes, with 430 reported incidents, while children (0-14 years) and seniors (55+ years) experienced fewer incidents, at 43 and 100 respectfully. The distribution of incidents across age groups disproportionately effects those of youth and early adulthood.
+ <br> 
+ </p>
+</div>
+<br>
+<br>

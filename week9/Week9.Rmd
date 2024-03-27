@@ -114,6 +114,7 @@ h4 { /* Header 4 - and the author and data headers use this too  */
 # code chunk specifies whether the R code, warnings, and output 
 # will be included in the output files.
 options(repos = list(CRAN="http://cran.rstudio.com/"))
+
 if (!require("tidyverse")) {
   install.packages("tidyverse")
   library(tidyverse)
@@ -187,8 +188,16 @@ if (!require("rmarkdown")) {
   install.packages("rmarkdown")              
   library("rmarkdown")
 }
-# knitr::opts_knit$set(root.dir = "/Users/kyleknox/Documents/M.S. Applied Statistics/SPRING 2024/STA533/week6)
-# knitr::opts_knit$set(root.dir = "C:\\STA490\\w05")
+
+if (!require("sf")) {
+  install.packages("sf")
+  library("sf")
+}
+if (!require("transformr")) {
+  install.packages("transformr")
+  library("transformr")
+}
+# knitr::opts_knit$set(root.dir = "/Users/kyleknox/Documents/M.S. Applied Statistics/SPRING 2024/STA533/week9)
 
 knitr::opts_chunk$set(echo = TRUE,       
                       warning = FALSE,   
@@ -196,4 +205,36 @@ knitr::opts_chunk$set(echo = TRUE,
                       message = FALSE)
 ```
 ```{r code, fig.width=10, fig.height=6.8}
+shootings <- st_read("https://raw.githubusercontent.com/kyleknox3/STA553/main/week9/shootings.geojson") %>%
+  filter(!is.na(point_x) & !is.infinite(point_x) &
+         !is.na(point_y) & !is.infinite(point_y))
+
+shootings$YEAR <- as.integer(shootings$year)
+
+
+colors <- c("1" = "red", "0" = "blue")
+
+which_state <- "pennsylvania"
+county_info <- map_data("county", region = which_state)
+philly_info <- county_info[county_info$subregion == "philadelphia",]
+
+
+base_map <- ggplot() +
+  geom_polygon(data = philly_info, aes(x = long, y = lat, group = group), color = "black", fill = "white") +
+  coord_sf(xlim = c(min(shootings$point_x), max(shootings$point_x)), 
+           ylim = c(min(shootings$point_y), max(shootings$point_y))) +
+  theme_void()
+
+map_with_data <- base_map +
+  geom_sf(data = shootings, aes(color = as.factor(fatal)), alpha = 0.5) + 
+  scale_color_manual(values = colors)
+
+animation <- map_with_data +
+  transition_time(YEAR) +
+  ggtitle('Year: {frame_time}') +
+  shadow_mark()
+
+anim_save("PhillyCrimeByYear.gif", animation)
+
+```
 

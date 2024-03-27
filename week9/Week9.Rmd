@@ -204,37 +204,40 @@ knitr::opts_chunk$set(echo = TRUE,
                       result = TRUE,   
                       message = FALSE)
 ```
-```{r code, fig.width=10, fig.height=6.8}
-shootings <- st_read("https://raw.githubusercontent.com/kyleknox3/STA553/main/week9/shootings.geojson") %>%
+```{r load-and-preprocess}
+# Load the shootings data from a GeoJSON source
+shootings <- st_read("https://raw.githubusercontent.com/kyleknox3/STA553/main/week9/shootings.geojson", quiet = TRUE) %>%
+  # Filter out rows with NA or infinite values in coordinate columns
   filter(!is.na(point_x) & !is.infinite(point_x) &
          !is.na(point_y) & !is.infinite(point_y))
 
+# Convert 'year' to integer
 shootings$YEAR <- as.integer(shootings$year)
+```
 
-
-colors <- c("1" = "red", "0" = "blue")
-
+```{r create-base-map}
+# Prepare the base map of Philadelphia
 which_state <- "pennsylvania"
-county_info <- map_data("county", region = which_state)
-philly_info <- county_info[county_info$subregion == "philadelphia",]
-
+philly_info <- map_data("county", region = which_state) %>%
+  filter(subregion == "philadelphia")
 
 base_map <- ggplot() +
   geom_polygon(data = philly_info, aes(x = long, y = lat, group = group), color = "black", fill = "white") +
-  coord_sf(xlim = c(min(shootings$point_x), max(shootings$point_x)), 
-           ylim = c(min(shootings$point_y), max(shootings$point_y))) +
   theme_void()
-
-map_with_data <- base_map +
-  geom_sf(data = shootings, aes(color = as.factor(fatal)), alpha = 0.5) + 
-  scale_color_manual(values = colors)
-
-animation <- map_with_data +
-  transition_time(YEAR) +
-  ggtitle('Year: {frame_time}') +
-  shadow_mark()
-
-anim_save("PhillyCrimeByYear.gif", animation)
-
 ```
 
+```{r create-animation, fig.width=10, fig.height=6.8}
+# Define colors for the 'fatal' categories
+colors <- c("1" = "red", "0" = "blue") # Ensure these match your data's 'fatal' encoding
+
+# Create the animation
+animation <- base_map +
+  geom_sf(data = shootings, aes(color = as.factor(fatal)), alpha = 0.5) +
+  scale_color_manual(values = colors) +
+  transition_time(YEAR) +
+  labs(title = 'Year: {frame_time}') +
+  shadow_mark()
+
+# Render and save the animation
+anim_save("PhillyCrimeByYear.gif", animation)
+```

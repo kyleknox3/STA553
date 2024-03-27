@@ -240,4 +240,9 @@ animation <- base_map +
 
 # Render and save the animation
 anim_save("PhillyCrimeByYear.gif", animation)
+
+print(base_map)
+
+# For an animation created with gganimate
+animation
 ```

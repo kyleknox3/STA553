@@ -110,7 +110,7 @@ h4 { /* Header 4 - and the author and data headers use this too  */
 </style>
   
   
-  ```{r setup, include=FALSE}
+```{r setup, include=FALSE}
 # code chunk specifies whether the R code, warnings, and output 
 # will be included in the output files.
 options(repos = list(CRAN="http://cran.rstudio.com/"))
@@ -193,9 +193,13 @@ if (!require("sf")) {
   install.packages("sf")
   library("sf")
 }
-if (!require("transformr")) {
-  install.packages("transformr")
-  library("transformr")
+if (!require("geojsonio")) {
+  install.packages("geojsonio")
+  library("geojsonio")
+}
+if (!require("leaflet")) {
+  install.packages("leaflet")
+  library("leaflet")
 }
 # knitr::opts_knit$set(root.dir = "/Users/kyleknox/Documents/M.S. Applied Statistics/SPRING 2024/STA533/week9)
 
@@ -204,45 +208,53 @@ knitr::opts_chunk$set(echo = TRUE,
                       result = TRUE,   
                       message = FALSE)
 ```
-```{r load-and-preprocess}
-# Load the shootings data from a GeoJSON source
-shootings <- st_read("https://raw.githubusercontent.com/kyleknox3/STA553/main/week9/shootings.geojson", quiet = TRUE) %>%
-  # Filter out rows with NA or infinite values in coordinate columns
-  filter(!is.na(point_x) & !is.infinite(point_x) &
-         !is.na(point_y) & !is.infinite(point_y))
 
-# Convert 'year' to integer
-shootings$YEAR <- as.integer(shootings$year)
-```
+```{r code, fig.height= 7, fig.width= 9}
+shootings <- st_read("https://raw.githubusercontent.com/kyleknox3/STA553/main/week9/shootings.geojson");
 
-```{r create-base-map}
-# Prepare the base map of Philadelphia
-which_state <- "pennsylvania"
-philly_info <- map_data("county", region = which_state) %>%
-  filter(subregion == "philadelphia")
+shootings_2023 <- shootings %>%
+  filter(year == 2023)
 
-base_map <- ggplot() +
-  geom_polygon(data = philly_info, aes(x = long, y = lat, group = group), color = "black", fill = "white") +
-  theme_void()
-```
+shootings_2023 <- shootings_2023 %>%
+  mutate(fatal = ifelse(fatal == 1, "Yes", "No"))
 
-```{r create-animation, fig.width=10, fig.height=6.8}
-# Define colors for the 'fatal' categories
-colors <- c("1" = "red", "0" = "blue") # Ensure these match your data's 'fatal' encoding
+map_title <- "PHL Shootings 2023"
 
-# Create the animation
-animation <- base_map +
-  geom_sf(data = shootings, aes(color = as.factor(fatal)), alpha = 0.5) +
-  scale_color_manual(values = colors) +
-  transition_time(YEAR) +
-  labs(title = 'Year: {frame_time}') +
-  shadow_mark()
+main_map <- leaflet(data = shootings_2023) %>%
+  addProviderTiles(providers$CartoDB.DarkMatter, group="Dark") %>%
+  addProviderTiles(providers$CartoDB.DarkMatterNoLabels, group="DarkLabel") %>%  
+  addProviderTiles(providers$Esri.NatGeoWorldMap, group="Esri") %>%
+  #addTiles(group = "Dark") %>%
+  #addTiles(group = "DarkLabel", options = providerTileOptions(noWrap = TRUE)) %>%
+  #addTiles(group = "Esri") %>%
+  addCircleMarkers(
+    radius = ~ifelse(fatal == "Yes", 5, 3),
+    color = ~case_when(
+      wound == "Head" ~ "red",
+      wound == "Multiple" ~ "blue",
+      wound == "Leg" ~ "green",
+      wound == "Neck" ~ "purple",
+      TRUE ~ "yellow"
+    ),
+    popup = ~paste("Fatal: ", fatal, 
+                   "<br>Wound: ", wound, 
+                   "<br>Age: ", age, 
+                   "<br>Race: ", race, 
+                   "<br>Location: ", location),
+    fillOpacity = 0.8
+  ) %>%
+  addLayersControl(baseGroups = c('Dark', 'DarkLabel', 'Esri'),
+                   options = layersControlOptions(collapsed = TRUE)) %>%
+  addLegend(
+    position = "bottomleft",
+    colors = c("red", "blue", "green", "purple", "yellow"),
+    labels = c("Head", "Multiple", "Leg", "Neck", "Other"),
+    title = "Legend"
+  ) %>%
+  addControl(
+    html = sprintf('<div class="leaflet-control-attribution leaflet-control" style="font-size: 20px;">%s</div>', map_title),
+    position = "topleft"
+  )
 
-# Render and save the animation
-anim_save("PhillyCrimeByYear.gif", animation)
-
-print(base_map)
-
-# For an animation created with gganimate
-animation
+main_map
 ```

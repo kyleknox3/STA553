@@ -280,8 +280,7 @@ With the new tailored Election Results dataset has results for every election si
             <img alt='Dashboard 1 ' src='https://public.tableau.com/static/images/9N/9NKPZ3SQ4/1_rss.png' style='border: none' />
         </a>
    </noscript>
-
-   <object class='tableauViz' style='display:none;'>
+   <object class='tableauViz' style='width: 1000px; height: 800px; display: block;'>
         <param name='host_url' value='https%3A%2F%2Fpublic.tableau.com%2F' />
         <param name='embed_code_version' value='3' />
         <param name='path' value='shared/9NKPZ3SQ4' />

@@ -1,0 +1,332 @@
+---
+title: "United States Election Results 2000 to 2020"
+author: "Kyle Knox"
+date: "Week 10"
+output:
+  html_document: 
+    toc: yes
+    toc_depth: 4
+    toc_float: yes
+    fig_width: 6
+    number_sections: yes
+    toc_collapsed: yes
+    code_folding: hide
+    code_download: yes
+    smooth_scroll: true
+    theme: readable
+    fig_height: 4
+---
+  
+  <style type="text/css">
+  
+  div#TOC li {
+list-style:none;
+background-color:lightgray;
+background-image:none;
+background-repeat:none;
+background-position:0;
+font-family: Arial, Helvetica, sans-serif;
+color: #780c0c;
+  }
+
+/* mouse over link */
+  div#TOC a:hover {
+color: red;
+}
+
+/* unvisited link */
+  div#TOC a:link {
+color: blue;
+}
+
+
+
+h1.title {
+  font-size: 24px;
+  color: Darkblue;
+  text-align: center;
+  font-family: Arial, Helvetica, sans-serif;
+  font-variant-caps: normal;
+}
+h4.author { 
+  font-size: 18px;
+  font-family: "Times New Roman", Times, serif;
+  color: DarkRed;
+  text-align: center;
+}
+h4.date { 
+  font-size: 18px;
+  font-family: "Times New Roman", Times, serif;
+  color: DarkBlue;
+  text-align: center;
+}
+h1 {
+  font-size: 22px;
+  font-family: "Times New Roman", Times, serif;
+  color: darkred;
+  text-align: center;
+}
+h2 { /
+    font-size: 18px;
+  font-family: "Times New Roman", Times, serif;
+  color: navy;
+  text-align: left;
+}
+
+h3 { 
+  font-size: 15px;
+  font-family: "Times New Roman", Times, serif;
+  color: navy;
+  text-align: left;
+}
+
+h4 { /* Header 4 - and the author and data headers use this too  */
+    font-size: 18px;
+  font-family: "Times New Roman", Times, serif;
+  color: darkred;
+  text-align: left;
+}
+
+/* unvisited link */
+  a:link {
+    color: green;
+  }
+
+/* visited link */
+  a:visited {
+    color: green;
+  }
+
+/* mouse over link */
+  a:hover {
+    color: red;
+  }
+
+/* selected link */
+  a:active {
+    color: yellow;
+  }
+
+</style>
+  
+  
+```{r setup, include=FALSE}
+# code chunk specifies whether the R code, warnings, and output 
+# will be included in the output files.
+options(repos = list(CRAN="http://cran.rstudio.com/"))
+
+if (!require("tidyverse")) {
+  install.packages("tidyverse")
+  library(tidyverse)
+}
+if (!require("knitr")) {
+  install.packages("knitr")
+  library(knitr)
+}
+if (!require("cowplot")) {
+  install.packages("cowplot")
+  library(cowplot)
+}
+if (!require("latex2exp")) {
+  install.packages("latex2exp")
+  library(latex2exp)
+}
+if (!require("plotly")) {
+  install.packages("plotly")
+  library(plotly)
+}
+if (!require("gapminder")) {
+  install.packages("gapminder")
+  library(gapminder)
+}
+if (!require("png")) {
+  install.packages("png")             # Install png package
+  library("png")
+}
+if (!require("RCurl")) {
+  install.packages("RCurl")             # Install RCurl package
+  library("RCurl")
+}
+if (!require("colourpicker")) {
+  install.packages("colourpicker")              
+  library("colourpicker")
+}
+if (!require("gifski")) {
+  install.packages("gifski")              
+  library("gifski")
+}
+if (!require("magick")) {
+  install.packages("magick")              
+  library("magick")
+}
+if (!require("grDevices")) {
+  install.packages("grDevices")              
+  library("grDevices")
+}
+### ggplot and extensions
+if (!require("ggplot2")) {
+  install.packages("ggplot2")              
+  library("ggplot2")
+}
+if (!require("gganimate")) {
+  install.packages("gganimate")              
+  library("gganimate")
+}
+if (!require("ggridges")) {
+  install.packages("ggridges")              
+  library("ggridges")
+}
+if (!require("dplyr")) {
+  install.packages("dplyr")              
+  library("dplyr")
+}
+if (!require("htmltools")) {
+  install.packages("htmltools")              
+  library("htmltools")
+}
+if (!require("rmarkdown")) {
+  install.packages("rmarkdown")              
+  library("rmarkdown")
+}
+
+if (!require("sf")) {
+  install.packages("sf")
+  library("sf")
+}
+if (!require("geojsonio")) {
+  install.packages("geojsonio")
+  library("geojsonio")
+}
+if (!require("leaflet")) {
+  install.packages("leaflet")
+  library("leaflet")
+}
+# knitr::opts_knit$set(root.dir = "/Users/kyleknox/Documents/M.S. Applied Statistics/SPRING 2024/STA533/week10)
+
+knitr::opts_chunk$set(echo = TRUE,       
+                      warning = FALSE,   
+                      result = TRUE,   
+                      message = FALSE)
+```
+<br>
+<br>
+<div style="text-align: center;"><span style="color: red;">Data Management for Results by State</span></div>
+
+<div style="width: 95%; margin: 0 auto; text-align: justify; border: 1px solid #ccc; padding: 10px; box-sizing: border-box;">
+  <p style="text-align: justify;">
+  1.) Filter the data for major parties:  Filtering the election data to include only Democrat and Republican results. <br>
+  2.) Aggregate votes by party and Candidate: Aggregate the filtered data by year, state, party, and candidate, calculate the total votes each party candidate combination received in each state for each election year. 
+  <br>
+  3.) Determine the winning party by state and year: Determine the winning party for each state and year by arranging the data in order of party votes from highest to lowest.  Then slice the data to select only the top row for each year and state combination to give the winning party.  Delete all rows with missing values. 
+  <br>
+  4.) Summarize the total votes by state and year: Calculate the total votes cast in each state for each election year by summing the candidate votes.  <br>
+  5.) Combine winning party and total votes data: The two data sets created above are merged together by year ans state.  This combines the data so each row contains information about the winning arty, votes recieved by the party, winning candidate, and the total votes cast in the state for that year. <br>
+ </p>
+</div>
+<br>
+<br>
+
+```{r}
+election_data <- read.csv("/Users/kyleknox/Documents/M.S. Applied Statistics/SPRING 2024/STA553/Week10/countypresidential_election_2000-2020.csv")
+
+filtered_data <- election_data %>%
+  filter(party %in% c("DEMOCRAT", "REPUBLICAN"))
+
+
+state_party_votes <- filtered_data %>%
+  group_by(year, state, party, candidate) %>%
+  summarize(party_votes = sum(candidatevotes), .groups = 'drop')
+
+
+winning_party_by_state_year <- state_party_votes %>%
+  arrange(desc(party_votes)) %>%
+  group_by(year, state) %>%
+  slice(1) %>%
+  ungroup() %>%
+  rename(winning_party = party, votes_received_for_candidate = party_votes, candidate1 = candidate)
+
+winning_party_by_state_year = na.omit(winning_party_by_state_year)
+
+
+total_votes_by_state_year <- filtered_data %>%
+  group_by(year, state) %>%
+  summarize(total_votes = sum(candidatevotes), .groups = 'drop')
+
+total_votes_by_state_year= na.omit(total_votes_by_state_year)
+
+final_dataset <- left_join(winning_party_by_state_year, total_votes_by_state_year, by = c("year", "state"))
+
+write.csv(final_dataset, "/Users/kyleknox/Documents/M.S. Applied Statistics/SPRING 2024/STA553/Week10/Pt_2.csv", row.names=FALSE)
+```
+
+<br>
+<br>
+<div style="text-align: center;"><span style="color: red;">Election Results by State Dataset</span></div>
+
+<div style="width: 95%; margin: 0 auto; text-align: justify; border: 1px solid #ccc; padding: 10px; box-sizing: border-box;">
+  <p style="text-align: justify;">
+With the new tailored Election Results dataset has results for every election since 2000 for each state in the United States.  The dataset tells you which party won the state, the candidate, how many votes that candidate received, and the total votes in the state. With this dashboard, the objective was to be able to visualize the spread of republican and democratic votes across the United State for any given presidential election since 2000. The states are colored based off which party won the state. When you hover the state, it will give you the year, state, candidate, winning party, and their percentage of votes. 
+ </p>
+</div>
+<br>
+<br>
+
+<table>
+<tr>
+<td>
+<div class='tableauPlaceholder' id='viz1712173315937' style='position: relative' width: 800px height: 600px>
+   <noscript>
+        <a href='#'>
+            <img alt='Dashboard 1 ' src='https://public.tableau.com/static/images/9N/9NKPZ3SQ4/1_rss.png' style='border: none' />
+        </a>
+   </noscript>
+   
+   <object class='tableauViz' style='display:none;'>
+        <param name='host_url' value='https%3A%2F%2Fpublic.tableau.com%2F' />
+        <param name='embed_code_version' value='3' />
+        <param name='path' value='shared/9NKPZ3SQ4' />
+        <param name='toolbar' value='yes' />
+        <param name='static_image' value='https://public.tableau.com/static/images/9N/9NKPZ3SQ4/1.png' />
+        <param name='animate_transition' value='yes' />
+        <param name='display_static_image' value='yes' />
+        <param name='display_spinner' value='yes' />
+        <param name='display_overlay' value='yes' />
+        <param name='display_count' value='yes' />
+        <param name='language' value='en-US' />
+   </object>
+</div>
+ 
+<script type='text/javascript'>
+    var divElement = document.getElementById('viz1712173315937');
+    var vizElement = divElement.getElementsByTagName('object')[0];
+    if (divElement.offsetWidth > 800) {
+        vizElement.style.minWidth = '820px';
+        vizElement.style.maxWidth = '1420px';
+        vizElement.style.width = '100%';
+        vizElement.style.minHeight = '587px';
+        vizElement.style.maxHeight = '887px';
+        vizElement.style.height = (divElement.offsetWidth * 0.75) + 'px';
+    } else if (divElement.offsetWidth > 500) {
+        vizElement.style.minWidth = '820px';
+        vizElement.style.maxWidth = '1420px';
+        vizElement.style.width = '100%';
+        vizElement.style.minHeight = '587px';
+        vizElement.style.maxHeight = '887px';
+        vizElement.style.height = (divElement.offsetWidth * 0.75) + 'px';
+    } else {
+        vizElement.style.width = '100%';
+        vizElement.style.height = '727px';
+    }
+    var scriptElement = document.createElement('script');
+    scriptElement.src = 'https://public.tableau.com/javascripts/api/viz_v1.js';
+    vizElement.parentNode.insertBefore(scriptElement, vizElement);
+</script>
+</td>
+</tr>
+</table>
+
+
+
+
+
+

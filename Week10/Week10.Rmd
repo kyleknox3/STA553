@@ -274,13 +274,13 @@ With the new tailored Election Results dataset has results for every election si
 <table>
 <tr>
 <td>
-<div class='tableauPlaceholder' id='viz1712173315937' style='position: relative' width: 5000px; height: 4500px;px>
+<div class='tableauPlaceholder'; id='viz1712173315937'; style='position: relative'; width: 5000px; height: 4500px;px>
    <noscript>
         <a href='#'>
             <img alt='Dashboard 1 ' src='https://public.tableau.com/static/images/9N/9NKPZ3SQ4/1_rss.png' style='border: none' />
         </a>
    </noscript>
-   
+
    <object class='tableauViz' style='display:none;'>
         <param name='host_url' value='https%3A%2F%2Fpublic.tableau.com%2F' />
         <param name='embed_code_version' value='3' />
@@ -324,9 +324,3 @@ With the new tailored Election Results dataset has results for every election si
 </td>
 </tr>
 </table>
-
-
-
-
-
-

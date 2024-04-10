@@ -1,0 +1,293 @@
+---
+title: "Loan Defaults: A look Inside"
+author: "Kyle Knox"
+date: "Week 11"
+output:
+  html_document: 
+    toc: yes
+    toc_depth: 4
+    toc_float: yes
+    fig_width: 6
+    number_sections: yes
+    toc_collapsed: yes
+    code_folding: hide
+    code_download: yes
+    smooth_scroll: true
+    theme: readable
+    fig_height: 4
+---
+  
+  <style type="text/css">
+  
+  div#TOC li {
+list-style:none;
+background-color:lightgray;
+background-image:none;
+background-repeat:none;
+background-position:0;
+font-family: Arial, Helvetica, sans-serif;
+color: #780c0c;
+  }
+
+/* mouse over link */
+  div#TOC a:hover {
+color: red;
+}
+
+/* unvisited link */
+  div#TOC a:link {
+color: blue;
+}
+
+
+
+h1.title {
+  font-size: 24px;
+  color: Darkblue;
+  text-align: center;
+  font-family: Arial, Helvetica, sans-serif;
+  font-variant-caps: normal;
+}
+h4.author { 
+  font-size: 18px;
+  font-family: "Times New Roman", Times, serif;
+  color: DarkRed;
+  text-align: center;
+}
+h4.date { 
+  font-size: 18px;
+  font-family: "Times New Roman", Times, serif;
+  color: DarkBlue;
+  text-align: center;
+}
+h1 {
+  font-size: 22px;
+  font-family: "Times New Roman", Times, serif;
+  color: darkred;
+  text-align: center;
+}
+h2 { /
+    font-size: 18px;
+  font-family: "Times New Roman", Times, serif;
+  color: navy;
+  text-align: left;
+}
+
+h3 { 
+  font-size: 15px;
+  font-family: "Times New Roman", Times, serif;
+  color: navy;
+  text-align: left;
+}
+
+h4 { /* Header 4 - and the author and data headers use this too  */
+    font-size: 18px;
+  font-family: "Times New Roman", Times, serif;
+  color: darkred;
+  text-align: left;
+}
+
+/* unvisited link */
+  a:link {
+    color: green;
+  }
+
+/* visited link */
+  a:visited {
+    color: green;
+  }
+
+/* mouse over link */
+  a:hover {
+    color: red;
+  }
+
+/* selected link */
+  a:active {
+    color: yellow;
+  }
+
+</style>
+  
+  
+```{r setup, include=FALSE}
+# code chunk specifies whether the R code, warnings, and output 
+# will be included in the output files.
+options(repos = list(CRAN="http://cran.rstudio.com/"))
+
+if (!require("tidyverse")) {
+  install.packages("tidyverse")
+  library(tidyverse)
+}
+if (!require("knitr")) {
+  install.packages("knitr")
+  library(knitr)
+}
+if (!require("cowplot")) {
+  install.packages("cowplot")
+  library(cowplot)
+}
+if (!require("latex2exp")) {
+  install.packages("latex2exp")
+  library(latex2exp)
+}
+if (!require("plotly")) {
+  install.packages("plotly")
+  library(plotly)
+}
+if (!require("gapminder")) {
+  install.packages("gapminder")
+  library(gapminder)
+}
+if (!require("png")) {
+  install.packages("png")             # Install png package
+  library("png")
+}
+if (!require("RCurl")) {
+  install.packages("RCurl")             # Install RCurl package
+  library("RCurl")
+}
+if (!require("colourpicker")) {
+  install.packages("colourpicker")              
+  library("colourpicker")
+}
+if (!require("gifski")) {
+  install.packages("gifski")              
+  library("gifski")
+}
+if (!require("magick")) {
+  install.packages("magick")              
+  library("magick")
+}
+if (!require("grDevices")) {
+  install.packages("grDevices")              
+  library("grDevices")
+}
+### ggplot and extensions
+if (!require("ggplot2")) {
+  install.packages("ggplot2")              
+  library("ggplot2")
+}
+if (!require("gganimate")) {
+  install.packages("gganimate")              
+  library("gganimate")
+}
+if (!require("ggridges")) {
+  install.packages("ggridges")              
+  library("ggridges")
+}
+if (!require("dplyr")) {
+  install.packages("dplyr")              
+  library("dplyr")
+}
+if (!require("htmltools")) {
+  install.packages("htmltools")              
+  library("htmltools")
+}
+if (!require("rmarkdown")) {
+  install.packages("rmarkdown")              
+  library("rmarkdown")
+}
+
+if (!require("sf")) {
+  install.packages("sf")
+  library("sf")
+}
+if (!require("geojsonio")) {
+  install.packages("geojsonio")
+  library("geojsonio")
+}
+if (!require("leaflet")) {
+  install.packages("leaflet")
+  library("leaflet")
+}
+# knitr::opts_knit$set(root.dir = "/Users/kyleknox/Documents/M.S. Applied Statistics/SPRING 2024/STA533/week10)
+
+knitr::opts_chunk$set(echo = TRUE,       
+                      warning = FALSE,   
+                      result = TRUE,   
+                      message = FALSE)
+```
+
+<table>
+<tr>
+<td>
+<div class='tableauPlaceholder' id='viz1712779685385' style='position: relative'>
+  <noscript><a href='#'>
+      <img alt='Bank Loan Defaults '             src='https:&#47;&#47;public.tableau.com&#47;static&#47;images&#47;Ba&#47;BankLoanDefaultsStory&#47;Story1&#47;1_rss.png' style='border: none' />
+        </a>
+  </noscript>
+  <object class='tableauViz'  style='width: 1200px; height: 800px; display: block;'>
+    <param name='host_url' value='https%3A%2F%2Fpublic.tableau.com%2F' /> 
+    <param name='embed_code_version' value='3' /> 
+    <param name='site_root' value='' />
+    <param name='name' value='BankLoanDefaultsStory&#47;Story1' />
+    <param name='tabs' value='no' /><param name='toolbar' value='yes' />
+    <param name='static_image'value='https:&#47;&#47;public.tableau.com&#47;static&#47;images&#47;Ba&#47;BankLoanDefaultsStory&#47;Story1&#47;1.png' /> 
+    <param name='animate_transition' value='yes' />
+    <param name='display_static_image' value='yes' />
+    <param name='display_spinner' value='yes' />
+    <param name='display_overlay' value='yes' />
+    <param name='display_count' value='yes' />
+    <param name='language' value='en-US' />
+  </object>
+</div>                
+
+<script type='text/javascript'>                    
+    var divElement = document.getElementById('viz1712779685385');                    
+    var vizElement = divElement.getElementsByTagName('object')[0]; vizElement.style.width='1016px';vizElement.style.height='991px';                    
+    var scriptElement = document.createElement('script');                    
+  scriptElement.src = 'https://public.tableau.com/javascripts/api/viz_v1.js'; vizElement.parentNode.insertBefore(scriptElement, vizElement);                
+</script>
+</td>
+</tr>
+</table>
+<br>
+<br>
+<br>
+<br>
+
+<table>
+<tr>
+<td>
+<div class='tableauPlaceholder' id='viz1712780488936' style='position: relative'>
+  <noscript>
+    <a href='#'>
+        <img alt='Bank Loan Defaults ' src='https:&#47;&#47;public.tableau.com&#47;static&#47;images&#47;Ba&#47;BankLoanDefaults_17126915699540&#47;Dashboard1&#47;1_rss.png' style='border: none' />
+    </a>
+
+  </noscript>
+  <object class='tableauViz'  style='width: 1400px; height: 1200px; display: block;'>
+    <param name='host_url' value='https%3A%2F%2Fpublic.tableau.com%2F' /> 
+    <param name='embed_code_version' value='3' /> 
+    <param name='site_root' value='' />
+    <param name='name' value='BankLoanDefaults_17126915699540&#47;Dashboard1' />
+    <param name='tabs' value='no' />
+    <param name='toolbar' value='yes' />
+    <param name='static_image' value='https:&#47;&#47;public.tableau.com&#47;static&#47;images&#47;Ba&#47;BankLoanDefaults_17126915699540&#47;Dashboard1&#47;1.png' /> 
+    <param name='animate_transition' value='yes' />
+    <param name='display_static_image' value='yes' />
+    <param name='display_spinner' value='yes' />
+    <param name='display_overlay' value='yes' />
+    <param name='display_count' value='yes' />
+    <param name='language' value='en-US' />
+  </object>
+</div>              
+
+<script type='text/javascript'>                    
+    var divElement = document.getElementById('viz1712780488936');                    
+    var vizElement = divElement.getElementsByTagName('object')[0];                    
+    if ( divElement.offsetWidth > 800 ) { vizElement.style.width='100%';
+        vizElement.style.maxWidth='1220px';
+        vizElement.style.height=(divElement.offsetWidth*0.75)+'px';vizElement.style.maxHeight='1487px';
+    } else if ( divElement.offsetWidth > 500 ) { vizElement.style.width='100%';vizElement.style.maxWidth='1220px';vizElement.style.height=(divElement.offsetWidth*0.75)+'px';vizElement.style.maxHeight='1487px';
+    } else { 
+        vizElement.style.width='100%';vizElement.style.height='2477px';
+    } 
+    var scriptElement = document.createElement('script');                    
+    scriptElement.src = 'https://public.tableau.com/javascripts/api/viz_v1.js';
+    vizElement.parentNode.insertBefore(scriptElement, vizElement);                
+</script>
+</td>
+</tr>
+</table>

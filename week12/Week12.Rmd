@@ -15,6 +15,7 @@ output:
     smooth_scroll: true
     theme: readable
     fig_height: 8
+    runtime: shiny
 ---
   
   <style type="text/css">

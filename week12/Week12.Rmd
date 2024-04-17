@@ -1,0 +1,283 @@
+---
+title: "Shiny App Development"
+author: "Kyle Knox"
+date: "Week 12"
+output:
+  html_document: 
+    toc: no
+    toc_depth: 4
+    toc_float: yes
+    fig_width: 6
+    number_sections: yes
+    toc_collapsed: yes
+    code_folding: hide
+    code_download: yes
+    smooth_scroll: true
+    theme: readable
+    fig_height: 8
+---
+  
+  <style type="text/css">
+  
+  div#TOC li {
+list-style:none;
+background-color:lightgray;
+background-image:none;
+background-repeat:none;
+background-position:0;
+font-family: Arial, Helvetica, sans-serif;
+color: #780c0c;
+  }
+
+/* mouse over link */
+  div#TOC a:hover {
+color: red;
+}
+
+/* unvisited link */
+  div#TOC a:link {
+color: blue;
+}
+
+
+
+h1.title {
+  font-size: 24px;
+  color: Darkblue;
+  text-align: center;
+  font-family: Arial, Helvetica, sans-serif;
+  font-variant-caps: normal;
+}
+h4.author { 
+  font-size: 18px;
+  font-family: "Times New Roman", Times, serif;
+  color: DarkRed;
+  text-align: center;
+}
+h4.date { 
+  font-size: 18px;
+  font-family: "Times New Roman", Times, serif;
+  color: DarkBlue;
+  text-align: center;
+}
+h1 {
+  font-size: 22px;
+  font-family: "Times New Roman", Times, serif;
+  color: darkred;
+  text-align: center;
+}
+h2 { /
+    font-size: 18px;
+  font-family: "Times New Roman", Times, serif;
+  color: navy;
+  text-align: left;
+}
+
+h3 { 
+  font-size: 15px;
+  font-family: "Times New Roman", Times, serif;
+  color: navy;
+  text-align: left;
+}
+
+h4 { /* Header 4 - and the author and data headers use this too  */
+    font-size: 18px;
+  font-family: "Times New Roman", Times, serif;
+  color: darkred;
+  text-align: left;
+}
+
+/* unvisited link */
+  a:link {
+    color: green;
+  }
+
+/* visited link */
+  a:visited {
+    color: green;
+  }
+
+/* mouse over link */
+  a:hover {
+    color: red;
+  }
+
+/* selected link */
+  a:active {
+    color: yellow;
+  }
+
+</style>
+  
+  
+```{r setup, include=FALSE}
+# code chunk specifies whether the R code, warnings, and output 
+# will be included in the output files.
+options(repos = list(CRAN="http://cran.rstudio.com/"))
+
+if (!require("tidyverse")) {
+  install.packages("tidyverse")
+  library(tidyverse)
+}
+if (!require("knitr")) {
+  install.packages("knitr")
+  library(knitr)
+}
+if (!require("cowplot")) {
+  install.packages("cowplot")
+  library(cowplot)
+}
+if (!require("latex2exp")) {
+  install.packages("latex2exp")
+  library(latex2exp)
+}
+if (!require("plotly")) {
+  install.packages("plotly")
+  library(plotly)
+}
+if (!require("gapminder")) {
+  install.packages("gapminder")
+  library(gapminder)
+}
+if (!require("png")) {
+  install.packages("png")             # Install png package
+  library("png")
+}
+if (!require("RCurl")) {
+  install.packages("RCurl")             # Install RCurl package
+  library("RCurl")
+}
+if (!require("colourpicker")) {
+  install.packages("colourpicker")              
+  library("colourpicker")
+}
+if (!require("gifski")) {
+  install.packages("gifski")              
+  library("gifski")
+}
+if (!require("magick")) {
+  install.packages("magick")              
+  library("magick")
+}
+if (!require("grDevices")) {
+  install.packages("grDevices")              
+  library("grDevices")
+}
+### ggplot and extensions
+if (!require("ggplot2")) {
+  install.packages("ggplot2")              
+  library("ggplot2")
+}
+if (!require("gganimate")) {
+  install.packages("gganimate")              
+  library("gganimate")
+}
+if (!require("ggridges")) {
+  install.packages("ggridges")              
+  library("ggridges")
+}
+if (!require("dplyr")) {
+  install.packages("dplyr")              
+  library("dplyr")
+}
+if (!require("htmltools")) {
+  install.packages("htmltools")              
+  library("htmltools")
+}
+if (!require("rmarkdown")) {
+  install.packages("rmarkdown")              
+  library("rmarkdown")
+}
+
+if (!require("sf")) {
+  install.packages("sf")
+  library("sf")
+}
+if (!require("geojsonio")) {
+  install.packages("geojsonio")
+  library("geojsonio")
+}
+if (!require("leaflet")) {
+  install.packages("leaflet")
+  library("leaflet")
+}
+if (!require("shiny")) {
+  install.packages("shiny")
+  library("shiny")
+}
+# knitr::opts_knit$set(root.dir = "/Users/kyleknox/Documents/M.S. Applied Statistics/SPRING 2024/STA533/week10)
+
+knitr::opts_chunk$set(echo = TRUE,       
+                      warning = FALSE,   
+                      result = TRUE,   
+                      message = FALSE)
+```
+
+```{r, fig.height=15, fig.width=12}
+library(shiny)
+
+ui <- fluidPage(
+  withMathJax(),
+  tags$div(HTML("<script type='text/x-mathjax-config'>
+            MathJax.Hub.Config({
+            tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}
+            });
+            </script>")),
+  br(), br(),
+  wellPanel(style = "background-color:#acdfe6;",
+            titlePanel(h2("Exponential Distribution of Random Variables", align = "center",
+                          style = "color:darkred; font-family:verdana; 
+                      font-variant: small-caps; font-weight: bold;"))
+  ),
+  sidebarPanel(style = "background-color:#acdfe6;",
+               tags$div( h4("User Input Panel", align = "center",
+                          style = "color:darkred; font-family:verdana; 
+                      font-variant: small-caps; font-weight: bold;")),
+               br(),
+               sliderInput("obs",
+                           "Number of observations (n)",
+                           min = 1,
+                           max = 1000,
+                           value = 100,
+                           animate = list(interval=550, loop=T)),
+               sliderInput("rate",
+                           "Rate parameter (lambda)",
+                           min = 0.1,
+                           max = 5,
+                           value = 1,
+                           step = 0.1),
+               br()
+  ),
+  mainPanel(
+    style = "background-color:lightgray; text-align: center;",
+    plotOutput("histPlot", height = "300px"),
+    plotOutput("densityPlot", height = "300px")
+  )
+)
+
+server <- function(input, output) {
+  output$histPlot <- renderPlot({
+    set.seed(3)
+    dist <- rexp(input$obs, rate = input$rate)
+    hist(dist,
+         col = "darkgreen",
+         main = "Histogram of Exponentially Distributed Random Variables",
+         xlab = "Values",
+         ylab = "Frequency")
+  })
+
+  output$densityPlot <- renderPlot({
+    set.seed(3)
+    dist <- rexp(input$obs, rate = input$rate)
+    plot(density(dist),
+         main = "Density Plot of Exponentially Distributed Random Variables",
+         xlab = "Values",
+         ylab = "Density",
+         col = "red")
+    lines(density(dist), col = "red", lwd = 2)
+  })
+}
+
+shinyApp(ui = ui, server = server)
+
+```

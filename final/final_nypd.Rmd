@@ -1,0 +1,177 @@
+---
+title: "NYPD Arrest Data Analysis"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: columns
+    vertical_layout: fill
+    theme: united
+runtime: shiny
+---
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Yusei+Magic&display=swap');
+body {
+  background-color: lightgray;
+  color: darkgreen;
+  text-align: left;
+}
+.navbar {
+  position: fixed;
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+.shiny-input-container {
+  color: purple;
+}
+.navbg {
+  background-color: blue;
+  color: white;
+}
+</style>
+
+```{r setup, include=FALSE}
+library(flexdashboard)
+library(shiny)
+library(plotly)
+library(ggplot2)
+library(tidyverse)
+library(leaflet)
+library(readr)
+
+nypd_arrests <- read_csv("/Users/kyleknox/Documents/M.S. Applied Statistics/SPRING 2024/STA553/final/nypd_arrests.csv", col_types = cols(
+  arrest_date = col_date(format = "%Y-%m-%d"),
+  arrest_boro = col_character(),
+  law_cat_cd = col_character(),
+  longitude = col_double(),
+  latitude = col_double(),
+  age_group = col_character(),
+  PERP_SEX = col_character()
+)) %>%
+  filter(!is.na(age_group), !is.na(PERP_SEX), !is.na(law_cat_cd), !is.na(arrest_boro)) %>%
+  mutate(age_group = as.numeric(age_group), age_group = if_else(is.na(age_group), 0, age_group))
+```
+
+Column {.sidebar .navbg data-width=200}
+-------------------------------------------------------------------
+
+### Inputs and Filters
+
+```{r}
+selectInput("borough", "Select Borough", choices = c("ALL", "Bronx" = "B", "Staten Island" = "S", "Brooklyn" = "K", "Manhattan" = "M", "Queens" = "Q"), selected = "ALL")
+selectInput("law_category", "Law Category", choices = c("ALL", unique(nypd_arrests$law_cat_cd)), selected = "ALL")
+selectInput("gender", "Perpetrator's Gender", choices = c("ALL", unique(nypd_arrests$PERP_SEX)), selected = "ALL")
+```
+
+Column {data-width=450 .tabset .tabset-pills}
+-------------------------------------------------------------------
+
+### Plotly Scatterplot
+
+```{r}
+renderPlotly({
+  data <- nypd_arrests %>%
+    filter((arrest_boro == input$borough | input$borough == "ALL") &
+           (law_cat_cd == input$law_category | input$law_category == "ALL") &
+           (PERP_SEX == input$gender | input$gender == "ALL"))
+  if (nrow(data) > 0) {
+    plot_ly(data, x = ~longitude, y = ~latitude, type = 'scatter', mode = 'markers', 
+            marker = list(size = 10), color = ~arrest_boro,
+            text = ~paste("Law Category:", law_cat_cd, "<br>Age:", age_group, "<br>Gender:", PERP_SEX))
+  } else {
+    plot_ly() %>%
+      add_annotations(text = "No data available for selected filters", x = 0.5, y = 0.5, showarrow = FALSE, font = list(size = 20))
+  }
+})
+```
+
+### Regression Analysis
+
+```{r}
+renderPlotly({
+  data <- nypd_arrests %>%
+    filter((arrest_boro == input$borough | input$borough == "ALL") &
+           (law_cat_cd == input$law_category | input$law_category == "ALL") &
+           (PERP_SEX == input$gender | input$gender == "ALL"))
+  if (nrow(data) > 1 && length(unique(data$PERP_SEX)) > 1) {  # Ensure at least two levels for factors
+    fit <- lm(age_group ~ PERP_SEX + law_cat_cd, data = data)
+    plot_ly(x = ~PERP_SEX, y = ~fitted(fit), type = 'bar', name = 'Fitted Values') %>%
+      add_trace(x = ~PERP_SEX, y = ~resid(fit), type = 'scatter', mode = 'markers', name = 'Residuals')
+  } else {
+    plot_ly() %>%
+      add_annotations(text = "Insufficient data for regression", x = 0.5, y = 0.5, showarrow = FALSE, font = list(size = 20))
+  }
+})
+```
+
+###Residual Plots
+```{r}
+renderPlotly({
+  data <- nypd_arrests %>%
+    filter((arrest_boro == input$borough | input$borough == "ALL") &
+           (law_cat_cd == input$law_category | input$law_category == "ALL") &
+           (PERP_SEX == input$gender | input$gender == "ALL"))
+
+  if (nrow(data) > 10) { # Ensuring there's enough data to fit a model
+    model <- lm(age_group ~ PERP_SEX + law_cat_cd, data = data)
+    res <- resid(model)
+    plot_ly(data, x = ~PERP_SEX, y = ~res, type = 'scatter', mode = 'markers',
+            marker = list(color = 'red'), name = 'Residuals') %>%
+      layout(title = "Residual Plot", yaxis = list(title = 'Residuals'), xaxis = list(title = 'Perpetrator Sex'))
+  } else {
+    plot_ly() %>%
+      add_annotations(text = "Not enough data for residuals", x = 0.5, y = 0.5, showarrow = FALSE, font = list(size = 20))
+  }
+})
+```
+
+### Prediction
+
+```{r}
+renderPlotly({
+  data <- nypd_arrests %>%
+    filter((arrest_boro == input$borough | input$borough == "ALL") &
+           (law_cat_cd == input$law_category | input$law_category == "ALL") &
+           (PERP_SEX == input$gender | input$gender == "ALL"))
+
+  if (nrow(data) > 10) {
+    model <- lm(age_group ~ PERP_SEX + law_cat_cd, data = data)
+    new_data <- data.frame(PERP_SEX = "M", law_cat_cd = "FELONY")
+    pred <- predict(model, new_data, interval = "prediction")
+    plot_ly(data, x = ~longitude, y = ~latitude, type = 'scatter', mode = 'markers') %>%
+      add_markers(x = ~longitude, y = pred, name = 'Predicted Age Group', marker = list(color = 'red'))
+  } else {
+    plot_ly() %>%
+      add_annotations(text = "Not enough data to make predictions", x = 0.5, y = 0.5, showarrow = FALSE, font = list(size = 20))
+  }
+})
+
+```
+
+Column {data-width=350}
+
+###boxplot
+```{r}
+renderPlotly({
+  data <- nypd_arrests %>%
+    filter((arrest_boro == input$borough | input$borough == "ALL") &
+           (law_cat_cd == input$law_category | input$law_category == "ALL") &
+           (PERP_SEX == input$gender | input$gender == "ALL"))
+  
+  plot_ly(data, y = ~age_group, x = ~law_cat_cd, type = 'box', color = ~arrest_boro, boxpoints = 'all')
+})
+```
+
+###overlay
+```{r}
+renderPlot({
+  data <- nypd_arrests %>%
+    filter((arrest_boro == input$borough | input$borough == "ALL") &
+           (law_cat_cd == input$law_category | input$law_category == "ALL") &
+           (PERP_SEX == input$gender | input$gender == "ALL"))
+  
+  ggplot(data, aes(x = law_cat_cd, y = age_group, fill = arrest_boro)) +
+    geom_boxplot() +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1))
+})
+```

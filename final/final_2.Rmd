@@ -1,0 +1,192 @@
+---
+title: "Visual Analysis of NYPD Arrests Data"
+output: 
+  flexdashboard::flex_dashboard:
+    theme: united
+    orientation: columns
+    vertical_layout: fill
+runtime: shiny
+---
+
+<style type="text/css">
+@import url('https://fonts.googleapis.com/css2?family=Yusei+Magic&display=swap');
+
+body {
+  background-color: lightgray;
+  color: darkgreen;
+  text-align: left;
+}
+
+.navbar {
+  position: fixed;
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+.shiny-input-container {
+  color: purple;
+}
+
+.navbg {
+  background-color: blue;
+  color: white;
+}
+</style>  
+
+```{r setup, include=FALSE}
+library(flexdashboard)
+library(shiny)
+library(plotly)
+library(ggplot2)
+library(tidyverse)
+library(leaflet)  
+library(sf)
+
+nypd_arrests <- read.csv("/Users/kyleknox/Documents/M.S. Applied Statistics/SPRING 2024/STA553/final/nypd_arrests.csv")
+nypd_arrests <- na.omit(nypd_arrests)
+nypd_arrests$arrest_boro <- factor(nypd_arrests$arrest_boro,
+                                   levels = c("S", "K", "M", "Q", "B"),
+                                   labels = c("Staten Island", "Brooklyn", "Manhattan", "Queens", "Bronx"))
+nypd_arrests$perp_sex <- factor(nypd_arrests$perp_sex,
+                                levels = c("M", "F"),
+                                labels = c("Male", "Female"))
+# Create dummy variables
+sex_dummies <- model.matrix(~ perp_sex - 1, data = nypd_arrests)
+boro_dummies <- model.matrix(~ arrest_boro - 1, data = nypd_arrests)
+
+# Append the dummy variables to the original dataframe
+nypd_arrests <- cbind(nypd_arrests, sex_dummies, boro_dummies)
+
+```
+Column {.sidebar .navbg data-width=200}
+-------------------------------------------------------------------
+
+<br><br>
+
+```{r}
+selectInput("selected_race", "Select Race:", choices = unique(nypd_arrests$perp_race))
+selectInput("selected_gender", "Select Gender:", choices = c("Male" = "Male", "Female" = "Female"), selected = "Male")
+selectInput("selected_boro", "Select Borough:", choices = c("Bronx", "Staten Island", "Brooklyn", "Manhattan", "Queens"))
+```
+
+```{r}
+workData <- function() {
+  if (input$selected_gender == "Male") {
+    filtered_data <- nypd_arrests[nypd_arrests$perp_sex == "Male", ]
+  } else if (input$selected_gender == "Female") {
+    filtered_data <- nypd_arrests[nypd_arrests$perp_sex == "Female", ]
+  } else {
+    filtered_data <- nypd_arrests
+  }
+  print(head(filtered_data))
+  return(filtered_data)
+}
+
+performLinearRegression <- function(data, selected_boro) {
+  filtered_data <- data[data$arrest_boro == selected_boro, ]
+  model <- lm(arrest_boro ~ as.numeric(age_group), data = filtered_data)
+  return(model)
+}
+
+summarizeRegressionStatistics <- function(model, selected_boro) {
+  filtered_data <- nypd_arrests[nypd_arrests$arrest_boro == selected_boro, ]
+  summary <- summary(model)
+  return(summary)
+}
+```
+
+Column {data-width=450 .tabset .tabset-pills} 
+-------------------------------------------------------------------
+### Arrest Count by Race
+
+```{r}
+output$racePlot <- renderPlot({
+  filtered_data <- nypd_arrests %>%
+    filter(perp_race == input$selected_race)
+  ggplot(filtered_data, aes(x = arrest_boro, fill = arrest_boro)) +
+    geom_bar() +
+    labs(title = paste("Arrest Count in Each Borough for", input$selected_race),
+         x = "Borough", y = "Count")
+})
+
+plotOutput("racePlot")
+```
+
+### Arrest Count by Gender
+```{r}
+output$genderPlot <- renderPlot({
+  filtered_data <- nypd_arrests %>%
+    filter(perp_sex == input$selected_gender)
+
+  ggplot(filtered_data, aes(x = arrest_boro, fill = arrest_boro)) +
+    geom_bar(stat = "count") +  
+    labs(title = paste("Arrest Count in Each Borough for", input$selected_gender),
+         x = "Borough", y = "Count")
+})
+
+plotOutput("genderPlot")
+```
+
+### Regression Analysis
+```{r}
+output$regressionPlot <- renderPlot({
+  data <- workData()
+  selected_boro <- input$selected_boro
+  filtered_data <- data[data$arrest_boro == selected_boro, ]
+  model <- performLinearRegression(data, selected_boro)
+  plot(filtered_data$age_group, filtered_data$arrest_boro,
+       main = paste("Linear Regression Plot for", selected_boro),
+       xlab = "Age Group",
+       ylab = "Arrest Count")
+  abline(model, lwd = 2, col = "red")
+})
+
+plotOutput("regressionPlot")
+```
+
+### Statistics Summary
+```{r}
+output$summaryTab <- renderPrint({
+  data <- workData()
+  selected_boro <- input$selected_boro
+  model <- performLogisticRegression(data, selected_boro)
+  summary <- summarizeInferentialStatistics(model, selected_boro)
+  print(summary)
+})
+```
+
+### Map Visualization
+
+```{r}
+renderLeaflet({
+  filtered_data <- nypd_arrests[nypd_arrests$arrest_boro == input$selected_boro, ]
+
+  leaflet(filtered_data) %>%
+    addTiles() %>%
+    addMarkers(
+      lng = ~longitude, 
+      lat = ~latitude, 
+      popup = ~paste("Arrest Date: ", arrest_date, "<br/>",
+                     "Gender: ", ifelse(perp_sex == "m", "Male", "Female"), "<br/>",
+                     "Race: ", perp_race),
+      clusterOptions = markerClusterOptions()
+    )
+})
+
+```
+
+Column {data-width=340}
+-------------------------------------------------------------------
+
+### Arrests by Borough
+
+```{r}
+renderPlot({
+  filtered_data <- nypd_arrests[nypd_arrests$arrest_boro == input$selected_boro, ]
+  ggplot(filtered_data, aes(x = perp_sex, fill = perp_race)) +
+    geom_bar(position = "dodge") +
+    labs(title = paste("Distribution of Arrests by Gender and Race in", input$selected_boro),
+         x = "Gender", y = "Count")
+})
+```
